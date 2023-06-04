@@ -1,6 +1,6 @@
 /** @format */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { RiMenuLine } from "react-icons/ri";
 import { ToastContainer } from "react-toastify";
@@ -14,25 +14,25 @@ const Navbar = () => {
 
 	return (
 		<nav className="bg-blue-500">
-			<div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
+			<div className="flex items-center justify-between max-w-6xl px-4 py-4 mx-auto sm:px-6 lg:px-8">
 				{/* normal navbar */}
 				<div className="hidden sm:block">
 					<div className="flex items-center">
 						<Link
 							to="/"
-							className="text-white font-semibold text-lg mr-4 transition-colors duration-300 hover:text-blue-200"
+							className="mr-4 text-lg font-semibold text-white transition-colors duration-300 hover:text-blue-200"
 						>
 							Home
 						</Link>
 						<Link
 							to="/signup"
-							className="text-white font-semibold text-lg mr-4 transition-colors duration-300 hover:text-blue-200"
+							className="mr-4 text-lg font-semibold text-white transition-colors duration-300 hover:text-blue-200"
 						>
 							Signup
 						</Link>
 						<Link
 							to="/login"
-							className="text-white font-semibold text-lg transition-colors duration-300 hover:text-blue-200"
+							className="text-lg font-semibold text-white transition-colors duration-300 hover:text-blue-200"
 						>
 							Login
 						</Link>
@@ -52,24 +52,24 @@ const Navbar = () => {
 
 				{/* Hamburger Menu */}
 				{isMenuOpen && (
-					<div className="sm:hidden absolute top-0 right-0 bg-blue-500 w-40 py-2 px-4">
+					<div className="absolute top-0 right-0 w-40 px-4 py-2 bg-blue-500 sm:hidden">
 						<Link
 							to="/"
-							className="block text-white font-medium text-lg mb-2 transition-colors duration-300 hover:text-blue-200"
+							className="block mb-2 text-lg font-medium text-white transition-colors duration-300 hover:text-blue-200"
 							onClick={toggleMenu}
 						>
 							Home
 						</Link>
 						<Link
 							to="/signup"
-							className="block text-white font-medium text-lg mb-2 transition-colors duration-300 hover:text-blue-200"
+							className="block mb-2 text-lg font-medium text-white transition-colors duration-300 hover:text-blue-200"
 							onClick={toggleMenu}
 						>
 							Signup
 						</Link>
 						<Link
 							to="/login"
-							className="block text-white font-medium text-lg transition-colors duration-300 hover:text-blue-200"
+							className="block text-lg font-medium text-white transition-colors duration-300 hover:text-blue-200"
 							onClick={toggleMenu}
 						>
 							Login

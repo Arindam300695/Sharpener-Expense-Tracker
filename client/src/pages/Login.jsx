@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
+const baseUrl = "http://localhost:8080";
+
 const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -14,16 +16,17 @@ const Login = () => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-
+		setEmail("");
+		setPassword("");
 		try {
-			const response = await axios.post("/api/login", {
+			const response = await axios.post(`${baseUrl}/api/users/login`, {
 				email,
 				password,
 			});
 			const data = response.data;
 			console.log(data);
 			// Display success message
-			// toast.success("Login successful");
+			if (data) toast.success(data.meassage);
 			// Handle the response from the backend API
 		} catch (error) {
 			toast.error(error.meassage); // Display error message

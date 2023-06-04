@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+const baseUrl = "http://localhost:8080";
 
 const Signup = () => {
 	const [name, setName] = useState("");
@@ -12,15 +15,28 @@ const Signup = () => {
 	const [password, setPassword] = useState("");
 	const [isPasswordVisible, setPasswordVisible] = useState(false);
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
+
 		if (name && email && password) {
-			console.log(name, email, password);
 			setName("");
 			setEmail("");
 			setPassword("");
 			// Perform signup logic here
-			toast.success("Signup successful!");
+			try {
+				const response = await axios.post(
+					`${baseUrl}/api/users/signup`,
+					{ name, email, password },
+				);
+				const data = response.data;
+				console.log(data);
+				// Display success message
+				if (data) toast.success(data.message);
+				// Handle the response from the backend API
+			} catch (error) {
+				toast.error(error); // Display error message
+				// Handle error
+			}
 		} else {
 			toast.error("Please fill in all fields.");
 		}

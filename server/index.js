@@ -1,11 +1,17 @@
 /** @format */
 
 const express = require("express");
+const cors = require("cors");
 const sequelize = require("./database/Database");
 const authRouter = require("./routes/AuthRouter");
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
+
+// injecting express middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Synchronize the model with the database
 sequelize
