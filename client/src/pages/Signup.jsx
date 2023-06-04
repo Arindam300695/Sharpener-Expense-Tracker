@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const Signup = () => {
 	const [name, setName] = useState("");
@@ -102,6 +103,12 @@ const Signup = () => {
 					>
 						Sign Up
 					</button>
+					<p className="mt-4 text-sm">
+						Already have an account?{" "}
+						<Link to="/login" className="font-semibold">
+							Login
+						</Link>
+					</p>
 				</form>
 			</div>
 		</>
