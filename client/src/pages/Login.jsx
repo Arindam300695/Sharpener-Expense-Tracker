@@ -61,6 +61,7 @@ const Login = () => {
 			// Display success message
 			if (data.message) {
 				toast.success(data.message);
+				localStorage.setItem("user", JSON.stringify(data.user));
 				handleOpenModal();
 				setTimeout(() => {
 					navigate("/dailyExpense");

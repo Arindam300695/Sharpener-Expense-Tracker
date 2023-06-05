@@ -4,15 +4,15 @@ const Expense = require("../models/ExpenseModel");
 
 // add expense controller
 const addExpenseController = async (req, res) => {
-	const { amount, description, category } = req.body;
+	const { amount, description, category, userId } = req.body;
 
 	try {
 		const expense = await Expense.create({
 			amount,
 			description,
 			category,
+			UserId: userId,
 		});
-
 		res.json({
 			message: "expense created and added to databse successfully",
 			expense,
@@ -24,8 +24,10 @@ const addExpenseController = async (req, res) => {
 
 // get expense contorller
 const getExpensesController = async (req, res) => {
+	const { userId } = req.params;
+
 	try {
-		const expenses = await Expense.findAll();
+		const expenses = await Expense.findAll({ where: { UserId: userId } });
 
 		res.json({ message: "expenses fetched successfully", expenses });
 	} catch (error) {
@@ -35,11 +37,11 @@ const getExpensesController = async (req, res) => {
 
 // delete expense controller
 const deleteExpenseController = async (req, res) => {
-	const { id } = req.params;
+	const { id, userId } = req.params;
 
 	try {
 		const deletedExpense = await Expense.destroy({
-			where: { id },
+			where: { id, UserId: userId },
 		});
 
 		if (deletedExpense) {

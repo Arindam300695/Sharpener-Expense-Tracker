@@ -13,24 +13,27 @@ const DailyExpense = () => {
 	const [category, setCategory] = useState("");
 	const [otherCategory, setOtherCategory] = useState("");
 	const [expenses, setExpenses] = useState([]);
+	const [userId, setUserId] = useState("");
 
 	useEffect(() => {
+		const user = JSON.parse(localStorage.getItem("user"));
+		if (user !== null) setUserId(user.id);
+		const fetchExpenses = async () => {
+			try {
+				const response = await axios.get(
+					`${baseUrl}/api/expense/getExpenses/${user.id}`,
+				);
+				const data = response.data;
+
+				setExpenses(data.expenses);
+				if (data.error) return toast.error(data.error);
+				return toast.success(data.message);
+			} catch (error) {
+				toast.error(error.message);
+			}
+		};
 		fetchExpenses();
 	}, []);
-
-	const fetchExpenses = async () => {
-		try {
-			const response = await axios.get(
-				`${baseUrl}/api/expense/getExpenses`,
-			);
-			const data = response.data;
-			setExpenses(data.expenses);
-			if (data.error) return toast.error(data.error);
-			return toast.success(data.message);
-		} catch (error) {
-			toast.error(error.message);
-		}
-	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -45,10 +48,11 @@ const DailyExpense = () => {
 					amount,
 					description,
 					category: categoryValue,
+					userId,
 				},
 			);
 			const data = response.data;
-			console.log(data);
+
 			setAmount("");
 			setDescription("");
 			setCategory("");
@@ -64,14 +68,13 @@ const DailyExpense = () => {
 	const handleDelete = async (id) => {
 		try {
 			const response = await axios.delete(
-				`${baseUrl}/api/expense/deleteExpenses/${id}`,
+				`${baseUrl}/api/expense/deleteExpenses/${id}/${userId}`,
 			);
 			const data = response.data;
 			setExpenses(expenses.filter((expense) => expense.id !== id));
 			if (data.error) return toast.error(data.error);
 			return toast.success(data.message);
 		} catch (error) {
-			console.error("Error deleting expense:", error);
 			toast.error("Failed to delete expense");
 		}
 	};

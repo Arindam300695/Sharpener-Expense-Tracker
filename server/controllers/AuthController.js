@@ -51,7 +51,7 @@ const loginController = async (req, res) => {
 		}
 
 		// User login successful
-		res.json({ message: "User login successful" });
+		res.json({ message: "User login successful", user });
 	} catch (error) {
 		res.json({ error: "Internal server error" });
 	}

@@ -5,6 +5,8 @@ const cors = require("cors");
 const sequelize = require("./database/Database");
 const authRouter = require("./routes/AuthRouter");
 const expenseRouter = require("./routes/ExpenseRouter");
+const User = require("./models/UserModel");
+const Expense = require("./models/ExpenseModel");
 
 const app = express();
 const PORT = 8080;
@@ -14,9 +16,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// setting up relation between user and expense model
+// Define the associations
+User.hasMany(Expense);
+Expense.belongsTo(User);
+
 // Synchronize the model with the database
 sequelize
-	.sync()
+	.sync({})
 	.then(() => {
 		console.log("Database synchronized.");
 	})

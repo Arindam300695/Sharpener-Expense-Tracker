@@ -10,7 +10,7 @@ const {
 const expenseRouter = express.Router();
 
 expenseRouter.post("/createExpense", addExpenseController);
-expenseRouter.get("/getExpenses", getExpensesController);
-expenseRouter.delete("/deleteExpenses/:id", deleteExpenseController);
+expenseRouter.get("/getExpenses/:userId", getExpensesController);
+expenseRouter.delete("/deleteExpenses/:id/:userId", deleteExpenseController);
 
 module.exports = expenseRouter;
