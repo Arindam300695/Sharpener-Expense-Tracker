@@ -1,21 +1,55 @@
 /** @format */
 
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const baseUrl = "http://localhost:8080";
 
 const Login = () => {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
+	const [isModalOpen, setModalOpen] = useState(false);
+	const [remainingTime, setRemainingTime] = useState(10);
+
+	useEffect(() => {
+		if (isModalOpen) {
+			const timer = setTimeout(() => {
+				setModalOpen(false);
+			}, 10000);
+
+			const interval = setInterval(() => {
+				setRemainingTime((prev) => prev - 1);
+			}, 1000);
+
+			return () => {
+				clearTimeout(timer);
+				clearInterval(interval);
+			};
+		}
+	}, [isModalOpen]);
+
+	const formatTime = (seconds) => {
+		const mins = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${mins.toString().padStart(2, "0")}:${secs
+			.toString()
+			.padStart(2, "0")}`;
+	};
+
+	const handleOpenModal = () => {
+		setModalOpen(true);
+	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		setRemainingTime(10);
+
 		setEmail("");
 		setPassword("");
 		try {
@@ -24,10 +58,16 @@ const Login = () => {
 				password,
 			});
 			const data = response.data;
-			console.log(data);
 			// Display success message
-			if (data) toast.success(data.meassage);
-			// Handle the response from the backend API
+			if (data.message) {
+				toast.success(data.message);
+				handleOpenModal();
+				setTimeout(() => {
+					navigate("/dailyExpense");
+				}, 10000);
+			}
+			// Handle the error from the backend API
+			if (data.error) return toast.error(data.error);
 		} catch (error) {
 			toast.error(error.meassage); // Display error message
 			// Handle error
@@ -97,6 +137,22 @@ const Login = () => {
 						</Link>
 					</p>
 				</form>
+
+				{isModalOpen && (
+					<div className="fixed inset-0 flex items-center justify-center z-50">
+						<div className="fixed inset-0 bg-black opacity-50"></div>
+						<div className="bg-white rounded-lg p-6 z-10">
+							<div className="mt-4">
+								<h2 className="text-xl font-bold mb-2">
+									Redirecting you to the Daily Expenses page
+								</h2>
+								<p className="text-gray-700">
+									{formatTime(remainingTime)}
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 		</>
 	);

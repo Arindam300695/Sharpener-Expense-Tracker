@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const sequelize = require("./database/Database");
 const authRouter = require("./routes/AuthRouter");
+const expenseRouter = require("./routes/ExpenseRouter");
 
 const app = express();
 const PORT = 8080;
@@ -27,7 +28,11 @@ sequelize
 app.use(express.json());
 
 // Routes
+
+// Auth routes
 app.use("/api/users", authRouter);
+// Expense routes
+app.use("/api/expense", expenseRouter);
 
 // Start the server
 app.listen(PORT, () => {

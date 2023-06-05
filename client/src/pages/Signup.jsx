@@ -1,22 +1,56 @@
 /** @format */
 
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const baseUrl = "http://localhost:8080";
 
 const Signup = () => {
+	const navigate = useNavigate();
+
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isPasswordVisible, setPasswordVisible] = useState(false);
+	const [isModalOpen, setModalOpen] = useState(false);
+	const [remainingTime, setRemainingTime] = useState(10);
+
+	useEffect(() => {
+		if (isModalOpen) {
+			const timer = setTimeout(() => {
+				setModalOpen(false);
+			}, 10000);
+
+			const interval = setInterval(() => {
+				setRemainingTime((prev) => prev - 1);
+			}, 1000);
+
+			return () => {
+				clearTimeout(timer);
+				clearInterval(interval);
+			};
+		}
+	}, [isModalOpen]);
+
+	const formatTime = (seconds) => {
+		const mins = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${mins.toString().padStart(2, "0")}:${secs
+			.toString()
+			.padStart(2, "0")}`;
+	};
+
+	const handleOpenModal = () => {
+		setModalOpen(true);
+	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		setRemainingTime(10);
 
 		if (name && email && password) {
 			setName("");
@@ -29,10 +63,17 @@ const Signup = () => {
 					{ name, email, password },
 				);
 				const data = response.data;
-				console.log(data);
+
 				// Display success message
-				if (data) toast.success(data.message);
-				// Handle the response from the backend API
+				if (data.message) {
+					toast.success(data.message);
+					handleOpenModal();
+					setTimeout(() => {
+						navigate("/login");
+					}, 10000);
+				}
+				// Handle the error from the backend API
+				if (data.error) return toast.error(data.error);
 			} catch (error) {
 				toast.error(error); // Display error message
 				// Handle error
@@ -50,6 +91,7 @@ const Signup = () => {
 		<>
 			<Navbar />
 			<div className="max-w-md p-6 mx-auto my-10 bg-white rounded-lg shadow-md">
+				{/* modal */}
 				<h2 className="mb-6 text-2xl font-semibold">Signup</h2>
 				<form onSubmit={handleSubmit}>
 					<div className="mb-4">
@@ -126,6 +168,22 @@ const Signup = () => {
 						</Link>
 					</p>
 				</form>
+
+				{isModalOpen && (
+					<div className="fixed inset-0 flex items-center justify-center z-50">
+						<div className="fixed inset-0 bg-black opacity-50"></div>
+						<div className="bg-white rounded-lg p-6 z-10">
+							<div className="mt-4">
+								<h2 className="text-xl font-bold mb-2">
+									Redirecting you to the Login page
+								</h2>
+								<p className="text-gray-700">
+									{formatTime(remainingTime)}
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 		</>
 	);
