@@ -7,6 +7,8 @@ const authRouter = require("./routes/AuthRouter");
 const expenseRouter = require("./routes/ExpenseRouter");
 const User = require("./models/UserModel");
 const Expense = require("./models/ExpenseModel");
+const paymentRouter = require("./routes/PaymentRouter");
+const Order = require("./models/OrderModel");
 
 const app = express();
 const PORT = 8080;
@@ -20,6 +22,9 @@ app.use(express.urlencoded({ extended: true }));
 // Define the associations
 User.hasMany(Expense);
 Expense.belongsTo(User);
+
+// Defining the realtion between the user and the order model
+Order.belongsTo(User);
 
 // Synchronize the model with the database
 sequelize
@@ -40,6 +45,8 @@ app.use(express.json());
 app.use("/api/users", authRouter);
 // Expense routes
 app.use("/api/expense", expenseRouter);
+// Payment routes
+app.use("/api/payment", paymentRouter);
 
 // Start the server
 app.listen(PORT, () => {
