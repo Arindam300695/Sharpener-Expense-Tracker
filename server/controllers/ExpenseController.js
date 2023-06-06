@@ -1,5 +1,6 @@
 /** @format */
 
+const { Sequelize } = require("sequelize");
 const Expense = require("../models/ExpenseModel");
 const User = require("../models/UserModel");
 
@@ -42,9 +43,19 @@ const getExpensesController = async (req, res) => {
 const getAllExpensesController = async (req, res) => {
 	try {
 		const expenses = await Expense.findAll({ include: User });
-		return res.json(expenses);
+		// Calculate total expense amount based on UserId using Sequelize
+		const result = await Expense.findAll({
+			include: { model: User, attributes: ["name"] },
+			attributes: [
+				"UserId",
+				[Sequelize.fn("SUM", Sequelize.col("amount")), "totalAmount"],
+			],
+			group: ["UserId"],
+		});
+
+		return res.json({ result, expenses });
 	} catch (error) {
-		return res.json({ error: error });
+		return res.json({ error: error.message });
 	}
 };
 

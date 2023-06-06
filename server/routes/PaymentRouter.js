@@ -30,31 +30,18 @@ paymentRouter.post("/order", async (req, res) => {
 			currency: "INR",
 		};
 
-		const isAlreadyPremiumMember = await Order.findAll({
-			where: { userId },
-		});
-
-		if (isAlreadyPremiumMember) {
-			for (let i = 0; i < isAlreadyPremiumMember.length; i++) {
-				if (isAlreadyPremiumMember[i].status === "completed")
-					return res.json({ error: "Alrady a premium member" });
-			}
-		}
-
 		const order = await razorpay.orders.create(options);
 
-		if (order) {
-			await Order.create({
-				paymentId: "",
-				orderId: order.id,
-				UserId: userId,
-			});
-			return res.json({
-				message: "Payment initiated",
-				orderId: order.id,
-				amount: order.amount,
-			});
-		}
+		await Order.create({
+			paymentId: "",
+			orderId: order.id,
+			UserId: userId,
+		});
+		return res.json({
+			message: "Payment initiated",
+			orderId: order.id,
+			amount: order.amount,
+		});
 	} catch (error) {
 		res.json({ error: "Failed to initiate payment" });
 	}
@@ -113,7 +100,7 @@ paymentRouter.post("/paymentFailed", async (req, res) => {
 	const orderToBeUpdated = await Order.findOne({
 		where: { orderId },
 	});
-	orderToBeUpdated.update({
+	await orderToBeUpdated.update({
 		paymentId,
 		status: "failed",
 	});

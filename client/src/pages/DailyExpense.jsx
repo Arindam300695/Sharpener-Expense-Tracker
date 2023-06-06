@@ -20,6 +20,11 @@ const DailyExpense = () => {
 	const [userName, setUserName] = useState("");
 	const [user, setUser] = useState({});
 	const [allExpenses, setAllExpenses] = useState([]);
+	const [toatalExpensesOfEachUser, setToatalExpensesOfEachUser] = useState(
+		[],
+	);
+
+	console.log("toatalExpenseOfEachUser: ", toatalExpensesOfEachUser);
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -48,14 +53,23 @@ const DailyExpense = () => {
 
 		const fetchAllExpenses = async () => {
 			try {
-				const response = await axios.get(
-					`${baseUrl}/api/expense/getAllExpenses`,
+				const {
+					data: { result, expenses },
+				} = await axios.get(`${baseUrl}/api/expense/getAllExpenses`);
+
+				// for totalAmount of each user
+				const sortedResult = result.sort(
+					(a, b) => b.totalAmount - a.totalAmount,
 				);
-				const data = response.data;
-				const sortedExpenses = data.sort((a, b) => b.amount - a.amount);
+				setToatalExpensesOfEachUser(sortedResult);
+
+				// for all the expenses of all the users
+				const sortedExpenses = expenses.sort(
+					(a, b) => b.amount - a.amount,
+				);
 				setAllExpenses(sortedExpenses);
 			} catch (error) {
-				console.error("Error fetching expenses:", error);
+				toast.error(error.message);
 			}
 		};
 		fetchAllExpenses();
@@ -88,6 +102,24 @@ const DailyExpense = () => {
 				(a, b) => b.amount - a.amount,
 			);
 			setAllExpenses(sortedExpenses);
+			const totalExpenses = [
+				...toatalExpensesOfEachUser.filter(
+					(expenseofEachUser) =>
+						expenseofEachUser.UserId !== data.expense.UserId,
+				),
+				...toatalExpensesOfEachUser.filter(
+					(expenseofEachUser) =>
+						expenseofEachUser.UserId === data.expense.UserId &&
+						(expenseofEachUser.totalAmount += Number(
+							data.expense.amount,
+						)),
+				),
+			];
+			const sortedTotalExpenses = totalExpenses.sort(
+				(a, b) => b.totalAmount - a.totalAmount,
+			);
+			setToatalExpensesOfEachUser(sortedTotalExpenses);
+
 			if (data.error) return toast.error(data.error);
 			return toast.success(data.message);
 		} catch (error) {
@@ -95,7 +127,7 @@ const DailyExpense = () => {
 		}
 	};
 
-	const handleDelete = async (id) => {
+	const handleDelete = async (id, amount) => {
 		try {
 			const response = await axios.delete(
 				`${baseUrl}/api/expense/deleteExpenses/${id}/${userId}`,
@@ -103,6 +135,22 @@ const DailyExpense = () => {
 			const data = response.data;
 			setExpenses(expenses.filter((expense) => expense.id !== id));
 			setAllExpenses(allExpenses.filter((expense) => expense.id !== id));
+
+			const totalExpenses = [
+				...toatalExpensesOfEachUser.filter(
+					(expenseofEachUser) => expenseofEachUser.UserId !== userId,
+				),
+				...toatalExpensesOfEachUser.filter(
+					(expenseofEachUser) =>
+						expenseofEachUser.UserId === userId &&
+						(expenseofEachUser.totalAmount -= Number(amount)),
+				),
+			];
+			const sortedTotalExpenses = totalExpenses.sort(
+				(a, b) => b.totalAmount - a.totalAmount,
+			);
+			setToatalExpensesOfEachUser(sortedTotalExpenses);
+
 			if (data.error) return toast.error(data.error);
 			return toast.success(data.message);
 		} catch (error) {
@@ -326,7 +374,12 @@ const DailyExpense = () => {
 								</td>
 								<td className="px-4 py-2 border-b border-gray-300">
 									<button
-										onClick={() => handleDelete(expense.id)}
+										onClick={() =>
+											handleDelete(
+												expense.id,
+												expense.amount,
+											)
+										}
 										className="text-red-500 transition-colors duration-300 hover:text-red-600"
 									>
 										Delete
@@ -336,6 +389,7 @@ const DailyExpense = () => {
 						))}
 					</tbody>
 				</table>
+				{/* individual expense table */}
 				{user?.status === "completed" && (
 					<div className=" mt-5">
 						<h1 className="text-2xl font-bold mb-4">
@@ -378,6 +432,33 @@ const DailyExpense = () => {
 							</tbody>
 						</table>
 					</div>
+				)}
+				{/* total expense table */}
+				{user?.status === "completed" && (
+					<table className="min-w-full divide-y divide-gray-200">
+						<thead>
+							<tr>
+								<th className="px-6 py-3 text-left font-bold text-slate-950 uppercase tracking-wider">
+									Total Amount
+								</th>
+								<th className="px-6 py-3 text-left font-bold text-slate-960 uppercase tracking-wider">
+									Username
+								</th>
+							</tr>
+						</thead>
+						<tbody className="bg-white divide-y divide-gray-200">
+							{toatalExpensesOfEachUser.map((item, index) => (
+								<tr key={index}>
+									<td className="px-6 py-4 whitespace-nowrap">
+										{item.totalAmount}
+									</td>
+									<td className="px-6 py-4 whitespace-nowrap">
+										{item.User.name}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				)}
 			</div>
 		</>

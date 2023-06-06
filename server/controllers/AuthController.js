@@ -52,38 +52,42 @@ const loginController = async (req, res) => {
 		}
 
 		const order = await Order.findAll({
-			where: { UserId: user.id },
+			where: { UserId: user.id, status: "completed" },
+			attributes: ["orderId", "paymentId", "status"],
 		});
 
-		if (order) {
-			for (let i = 0; i < order.length; i++) {
-				if (order[i].status === "completed")
-					return res.json({
-						message: "User login successfull",
-						user: {
-							id: user.id,
-							name: user.name,
-							email: user.email,
-							orderId: order[i].orderId,
-							paymentId: order[i].paymentId,
-							status: order[i].status,
-						},
-					});
-			}
+		console.log(order);
+		if (order.length > 0) {
+			const orders = order.map((o) => ({
+				orderId: o.orderId,
+				paymentId: o.paymentId,
+				status: o.status,
+			}));
+			return res.json({
+				message: "User login successfull",
+				user: {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					orderId: orders[0].orderId,
+					paymentId: orders[0].paymentId,
+					status: orders[0].status,
+				},
+			});
+		} else {
+			// User login successful
+			return res.json({
+				message: "User login successful",
+				user: {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					orderId: "",
+					paymentId: "",
+					status: "",
+				},
+			});
 		}
-
-		// User login successful
-		return res.json({
-			message: "User login successful",
-			user: {
-				id: user.id,
-				name: user.name,
-				email: user.email,
-				orderId: "",
-				paymentId: "",
-				status: "",
-			},
-		});
 	} catch (error) {
 		res.json({ error: "Internal server error" });
 	}
