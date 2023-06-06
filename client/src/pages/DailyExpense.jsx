@@ -18,18 +18,22 @@ const DailyExpense = () => {
 	const [userId, setUserId] = useState("");
 	const [userEmail, setUserEmail] = useState("");
 	const [userName, setUserName] = useState("");
+	const [user, setUser] = useState({});
+	const [allExpenses, setAllExpenses] = useState([]);
 
 	useEffect(() => {
-		const user = JSON.parse(localStorage.getItem("user"));
-		if (user !== null) {
-			setUserId(user.id);
-			setUserEmail(user.email);
-			setUserName(user.name);
+		const localStorageUser = JSON.parse(localStorage.getItem("user"));
+		if (localStorageUser !== null) {
+			setUser(localStorageUser);
+			setUserId(localStorageUser.id);
+			setUserEmail(localStorageUser.email);
+			setUserName(localStorageUser.name);
 		}
+
 		const fetchExpenses = async () => {
 			try {
 				const response = await axios.get(
-					`${baseUrl}/api/expense/getExpenses/${user.id}`,
+					`${baseUrl}/api/expense/getExpenses/${localStorageUser.id}`,
 				);
 				const data = response.data;
 
@@ -41,6 +45,20 @@ const DailyExpense = () => {
 			}
 		};
 		fetchExpenses();
+
+		const fetchAllExpenses = async () => {
+			try {
+				const response = await axios.get(
+					`${baseUrl}/api/expense/getAllExpenses`,
+				);
+				const data = response.data;
+				const sortedExpenses = data.sort((a, b) => b.amount - a.amount);
+				setAllExpenses(sortedExpenses);
+			} catch (error) {
+				console.error("Error fetching expenses:", error);
+			}
+		};
+		fetchAllExpenses();
 	}, []);
 
 	const handleSubmit = async (e) => {
@@ -66,6 +84,10 @@ const DailyExpense = () => {
 			setCategory("");
 			setOtherCategory("");
 			setExpenses([...expenses, data.expense]);
+			const sortedExpenses = data.expenses.sort(
+				(a, b) => b.amount - a.amount,
+			);
+			setAllExpenses(sortedExpenses);
 			if (data.error) return toast.error(data.error);
 			return toast.success(data.message);
 		} catch (error) {
@@ -80,6 +102,7 @@ const DailyExpense = () => {
 			);
 			const data = response.data;
 			setExpenses(expenses.filter((expense) => expense.id !== id));
+			setAllExpenses(allExpenses.filter((expense) => expense.id !== id));
 			if (data.error) return toast.error(data.error);
 			return toast.success(data.message);
 		} catch (error) {
@@ -114,7 +137,7 @@ const DailyExpense = () => {
 				description: "Test Transaction",
 				image: "https://example.com/your_logo",
 				order_id: orderId,
-				// callback_url: `${baseUrl}/api/payment/verify`,
+
 				handler: async (response) => {
 					const { data } = await axios.post(
 						`${baseUrl}/api/payment/verify`,
@@ -125,8 +148,15 @@ const DailyExpense = () => {
 						},
 					);
 					if (data.error) return toast.error(data.error);
-					else navigate("/paymentSuccess");
+					if (data.message) {
+						localStorage.setItem(
+							"user",
+							JSON.stringify(data.userWithOrderStatus),
+						);
+						navigate("/paymentSuccess");
+					}
 				},
+
 				prefill: {
 					name: userName,
 					email: userEmail,
@@ -239,22 +269,33 @@ const DailyExpense = () => {
 					)}
 					<button
 						type="submit"
-						className="px-4 py-2 text-white transition-colors duration-300 bg-blue-500 rounded-md hover:bg-blue-600"
+						className={`px-4 py-2 text-white transition-colors duration-300 bg-blue-500 rounded-md hover:bg-blue-600`}
 					>
 						Add Expense
 					</button>
+
 					<button
 						onClick={handlePayment}
-						className="p-2 ml-4 border-2 border-black rounded-md"
+						className={`p-2 ml-4 border-2 border-black rounded-md ${
+							user?.status === "completed" && "hidden"
+						}  `}
 					>
 						Pay Now
 					</button>
+
+					<span
+						className={`ml-4 bg-green-400 p-2 rounded-md hover:bg-green-600 font-semibold ${
+							user?.status !== "completed" && "hidden"
+						}`}
+					>
+						You are a premium user now
+					</span>
 				</form>
 
 				<h3 className="mb-2 text-lg font-bold">Expense Table</h3>
 
 				{/* TODO: expense table */}
-				<table className="w-full mb-4 border-collapse">
+				<table className="w-full mb-4 ">
 					<thead>
 						<tr>
 							<th className="px-4 py-2 border-b-2 border-gray-300">
@@ -295,6 +336,49 @@ const DailyExpense = () => {
 						))}
 					</tbody>
 				</table>
+				{user?.status === "completed" && (
+					<div className=" mt-5">
+						<h1 className="text-2xl font-bold mb-4">
+							Expense Leaderboard
+						</h1>
+						<table className="min-w-full bg-white border border-gray-300">
+							<thead>
+								<tr>
+									<th className="py-2 px-4 border-b">
+										Amount
+									</th>
+									<th className="py-2 px-4 border-b">
+										Description
+									</th>
+									<th className="py-2 px-4 border-b">
+										Category
+									</th>
+									<th className="py-2 px-4 border-b">
+										Created By
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{allExpenses.map((expense) => (
+									<tr key={expense.id}>
+										<td className="py-2 px-4 border-b">
+											{expense.amount}
+										</td>
+										<td className="py-2 px-4 border-b">
+											{expense.description}
+										</td>
+										<td className="py-2 px-4 border-b">
+											{expense.category}
+										</td>
+										<td className="py-2 px-4 border-b">
+											{expense?.User?.name}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
 			</div>
 		</>
 	);

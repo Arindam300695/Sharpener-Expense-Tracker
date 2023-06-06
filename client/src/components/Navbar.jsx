@@ -13,8 +13,8 @@ const Navbar = () => {
 	};
 
 	return (
-		<nav className="bg-blue-500">
-			<div className="flex items-center justify-between max-w-6xl px-4 py-4 mx-auto sm:px-6 lg:px-8">
+		<nav className="w-full bg-blue-500">
+			<div className="flex items-center justify-between px-4 py-4 mx-auto sm:px-6 lg:px-8">
 				{/* normal navbar */}
 				<div className="hidden sm:block">
 					<div className="flex items-center">

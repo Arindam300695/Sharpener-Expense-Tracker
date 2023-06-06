@@ -5,6 +5,7 @@ const paymentRouter = express.Router();
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Order = require("../models/OrderModel");
+const User = require("../models/UserModel");
 require("dotenv").config();
 
 const razorpay = new Razorpay({
@@ -55,7 +56,6 @@ paymentRouter.post("/order", async (req, res) => {
 			});
 		}
 	} catch (error) {
-		console.log(error.message);
 		res.json({ error: "Failed to initiate payment" });
 	}
 });
@@ -78,11 +78,26 @@ paymentRouter.post("/verify", async (req, res) => {
 			const orderToBeUpdated = await Order.findOne({
 				where: { orderId: razorpay_order_id },
 			});
-			orderToBeUpdated.update({
+			await orderToBeUpdated.update({
 				paymentId: razorpay_payment_id,
 				status: "completed",
 			});
-			res.send({ message: "Payment completed successfully" });
+			const order = await Order.findOne({
+				where: { orderId: razorpay_order_id },
+			});
+			const user = await User.findOne({ where: { id: order.UserId } });
+
+			res.send({
+				message: "Payment completed successfully",
+				userWithOrderStatus: {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					orderId: order.orderId,
+					paymentId: order.paymentId,
+					status: order.status,
+				},
+			});
 		} else {
 			res.json({ error: "Not Authenticated" });
 		}
@@ -94,7 +109,7 @@ paymentRouter.post("/verify", async (req, res) => {
 // route for handeling payment failed
 paymentRouter.post("/paymentFailed", async (req, res) => {
 	const { userId, orderId, paymentId } = req.body;
-	console.log(userId, orderId);
+
 	const orderToBeUpdated = await Order.findOne({
 		where: { orderId },
 	});

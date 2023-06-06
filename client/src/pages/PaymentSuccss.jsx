@@ -27,9 +27,9 @@ const PaymentSuccess = () => {
 				<h2 className="mb-2 text-2xl font-semibold text-white">
 					Thank you for your payment
 				</h2>
-				<Link to="/">
+				<Link to="/dailyExpense">
 					<button className="px-4 py-2 mt-6 text-xl font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-600">
-						Go back to Home
+						Go back to Daily Expense Page
 					</button>
 				</Link>
 			</div>

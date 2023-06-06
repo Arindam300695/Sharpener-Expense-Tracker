@@ -1,5 +1,6 @@
 /** @format */
 
+const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 const bcrypt = require("bcryptjs");
 const saltRounds = 12;
@@ -50,8 +51,39 @@ const loginController = async (req, res) => {
 			return res.json({ error: "User not authorized" });
 		}
 
+		const order = await Order.findAll({
+			where: { UserId: user.id },
+		});
+
+		if (order) {
+			for (let i = 0; i < order.length; i++) {
+				if (order[i].status === "completed")
+					return res.json({
+						message: "User login successfull",
+						user: {
+							id: user.id,
+							name: user.name,
+							email: user.email,
+							orderId: order[i].orderId,
+							paymentId: order[i].paymentId,
+							status: order[i].status,
+						},
+					});
+			}
+		}
+
 		// User login successful
-		res.json({ message: "User login successful", user });
+		return res.json({
+			message: "User login successful",
+			user: {
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				orderId: "",
+				paymentId: "",
+				status: "",
+			},
+		});
 	} catch (error) {
 		res.json({ error: "Internal server error" });
 	}
