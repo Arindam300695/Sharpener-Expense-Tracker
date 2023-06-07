@@ -8,6 +8,7 @@ const bcrypt = require("bcryptjs");
 const saltRounds = 12;
 require("dotenv").config();
 
+// very first post request that will be fired from the user side if any user wants to reset his/her password and this controller will simply check if the user exists with the given email id that he/she is provided and if the user exists in our database then we are just creating the password reset request for that user and sending the user password reset link
 const sendEmailForResettingPasswordController = async (req, res) => {
 	const { email } = req.body;
 
@@ -57,6 +58,7 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 	}
 };
 
+// first post request which will be fired when the user will click on the sent link through the email just to check whether the link is still active or not
 const passwordResettingController = async (req, res) => {
 	const { requestId } = req.body;
 	try {
@@ -73,6 +75,7 @@ const passwordResettingController = async (req, res) => {
 	}
 };
 
+// second post request which completely handles the password resetting logic
 const confirmResetPasswordController = async (req, res) => {
 	const { email, requestId, password } = req.body;
 	try {
