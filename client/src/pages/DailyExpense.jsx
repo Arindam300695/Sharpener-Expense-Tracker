@@ -1,465 +1,374 @@
 /** @format */
 
 import { useState, useEffect } from "react";
+import Navbar from "../components/Navbar";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 
 const baseUrl = "http://localhost:8080";
 
 const DailyExpense = () => {
-	const navigate = useNavigate("/");
+	const navigate = useNavigate();
+
 	const [amount, setAmount] = useState("");
 	const [description, setDescription] = useState("");
 	const [category, setCategory] = useState("");
-	const [otherCategory, setOtherCategory] = useState("");
 	const [expenses, setExpenses] = useState([]);
-	const [userId, setUserId] = useState("");
-	const [userEmail, setUserEmail] = useState("");
-	const [userName, setUserName] = useState("");
 	const [user, setUser] = useState({});
-	const [allExpenses, setAllExpenses] = useState([]);
-	const [toatalExpensesOfEachUser, setToatalExpensesOfEachUser] = useState(
-		[],
-	);
-
-	console.log("toatalExpenseOfEachUser: ", toatalExpensesOfEachUser);
+	const [totalExpense, setTotalExpense] = useState([]);
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
-		if (localStorageUser !== null) {
-			setUser(localStorageUser);
-			setUserId(localStorageUser.id);
-			setUserEmail(localStorageUser.email);
-			setUserName(localStorageUser.name);
-		}
+		if (localStorageUser !== null) setUser(localStorageUser);
 
+		// Fetch user-specific expenses
 		const fetchExpenses = async () => {
 			try {
-				const response = await axios.get(
+				const { data } = await axios.get(
 					`${baseUrl}/api/expense/getExpenses/${localStorageUser.id}`,
-				);
-				const data = response.data;
+				); // Replace with your API endpoint
+
+				if (data.error) return toast.error(data.error);
 
 				setExpenses(data.expenses);
-				if (data.error) return toast.error(data.error);
-				return toast.success(data.message);
 			} catch (error) {
 				toast.error(error.message);
 			}
 		};
 		fetchExpenses();
 
-		const fetchAllExpenses = async () => {
+		// fetching the leaderboard data
+		const fetcheLeaderBoardData = async () => {
 			try {
-				const {
-					data: { result, expenses },
-				} = await axios.get(`${baseUrl}/api/expense/getAllExpenses`);
-
-				// for totalAmount of each user
-				const sortedResult = result.sort(
-					(a, b) => b.totalAmount - a.totalAmount,
+				const { data } = await axios.get(`${baseUrl}/api/leaderboard`); // Replace with your API endpoint
+				const sortedData = data.sort(
+					(a, b) => b.totalExpenses - a.totalExpenses,
 				);
-				setToatalExpensesOfEachUser(sortedResult);
-
-				// for all the expenses of all the users
-				const sortedExpenses = expenses.sort(
-					(a, b) => b.amount - a.amount,
-				);
-				setAllExpenses(sortedExpenses);
+				setTotalExpense(sortedData);
 			} catch (error) {
 				toast.error(error.message);
 			}
 		};
-		fetchAllExpenses();
-	}, []);
 
-	const handleSubmit = async (e) => {
+		fetcheLeaderBoardData();
+	}, [user.id]);
+
+	// Handle expense submission
+	const handleAddExpense = async (e) => {
 		e.preventDefault();
 
 		try {
-			const categoryValue =
-				category === "Other" ? otherCategory : category;
-
-			const response = await axios.post(
+			// Send API request to add expense
+			const { data } = await axios.post(
 				`${baseUrl}/api/expense/createExpense`,
 				{
 					amount,
 					description,
-					category: categoryValue,
-					userId,
+					category,
+					userId: user.id,
 				},
 			);
-			const data = response.data;
 
+			localStorage.setItem(
+				"user",
+				JSON.stringify({
+					...JSON.parse(localStorage.getItem("user")),
+					totalExpenses: data.user.totalExpenses,
+				}),
+			);
+
+			if (data.error) return toast.error(data.error);
+			toast.success(data.message);
+
+			// Clear input fields and update expenses
 			setAmount("");
 			setDescription("");
 			setCategory("");
-			setOtherCategory("");
-			setExpenses([...expenses, data.expense]);
-			const sortedExpenses = data.expenses.sort(
-				(a, b) => b.amount - a.amount,
-			);
-			setAllExpenses(sortedExpenses);
-			const totalExpenses = [
-				...toatalExpensesOfEachUser.filter(
-					(expenseofEachUser) =>
-						expenseofEachUser.UserId !== data.expense.UserId,
-				),
-				...toatalExpensesOfEachUser.filter(
-					(expenseofEachUser) =>
-						expenseofEachUser.UserId === data.expense.UserId &&
-						(expenseofEachUser.totalAmount += Number(
-							data.expense.amount,
-						)),
+			setExpenses((prevExpenses) => [
+				...prevExpenses,
+				{ amount, description, category },
+			]);
+
+			// writing the logic to sort the total expense of each user whenever the logged in user will create or add a new expense
+			const userTotalExpense = [
+				...totalExpense.filter((item) => item.id !== user.id),
+				...totalExpense.filter(
+					(item) =>
+						item.id === user.id &&
+						(item.totalExpenses += Number(data.expense.amount)),
 				),
 			];
-			const sortedTotalExpenses = totalExpenses.sort(
-				(a, b) => b.totalAmount - a.totalAmount,
+			const sortedUserTotalExpense = userTotalExpense.sort(
+				(a, b) => b.totalExpenses - a.totalExpenses,
 			);
-			setToatalExpensesOfEachUser(sortedTotalExpenses);
-
-			if (data.error) return toast.error(data.error);
-			return toast.success(data.message);
+			setTotalExpense(sortedUserTotalExpense);
+			// const sortedUserTotalExpense = userTotalExpense.sort((a,b)=>b.)
 		} catch (error) {
 			toast.error(error.message);
 		}
 	};
 
-	const handleDelete = async (id, amount) => {
+	// Handle expense deletion
+	const handleDeleteExpense = async (expenseId, expenseAmount) => {
 		try {
-			const response = await axios.delete(
-				`${baseUrl}/api/expense/deleteExpenses/${id}/${userId}`,
+			// Send API request to delete expense
+			const { data } = await axios.delete(
+				`${baseUrl}/api/expense/deleteExpenses/${expenseId}/${user.id}`,
 			);
-			const data = response.data;
-			setExpenses(expenses.filter((expense) => expense.id !== id));
-			setAllExpenses(allExpenses.filter((expense) => expense.id !== id));
 
-			const totalExpenses = [
-				...toatalExpensesOfEachUser.filter(
-					(expenseofEachUser) => expenseofEachUser.UserId !== userId,
-				),
-				...toatalExpensesOfEachUser.filter(
-					(expenseofEachUser) =>
-						expenseofEachUser.UserId === userId &&
-						(expenseofEachUser.totalAmount -= Number(amount)),
-				),
-			];
-			const sortedTotalExpenses = totalExpenses.sort(
-				(a, b) => b.totalAmount - a.totalAmount,
+			localStorage.setItem(
+				"user",
+				JSON.stringify({
+					...JSON.parse(localStorage.getItem("user")),
+					totalExpenses: data.user.totalExpenses,
+				}),
 			);
-			setToatalExpensesOfEachUser(sortedTotalExpenses);
 
 			if (data.error) return toast.error(data.error);
-			return toast.success(data.message);
+			toast.success(data.message);
+
+			// Update expenses
+			setExpenses((prevExpenses) =>
+				prevExpenses.filter((expense) => expense.id !== expenseId),
+			);
+
+			// writing the logic to sort total expense of each user whenever the logged in user will delete any expense
+			const userTotalExpense = [
+				...totalExpense.filter((item) => item.id !== user.id),
+				...totalExpense.filter(
+					(item) =>
+						item.id === user.id &&
+						(item.totalExpenses -= Number(expenseAmount)),
+				),
+			];
+			const sortedUserTotalExpense = userTotalExpense.sort(
+				(a, b) => b.totalExpenses - a.totalExpenses,
+			);
+			setTotalExpense(sortedUserTotalExpense);
 		} catch (error) {
-			toast.error("Failed to delete expense");
+			toast.error(error.message);
 		}
 	};
 
-	// for premium users only
-	const handlePayment = async () => {
-		try {
-			// get request for getting the razorpay secrect key
-			const {
-				data: { key },
-			} = await axios.get(`${baseUrl}/api/payment/key`);
+	// handle buy premium functionality
+	const handleBuyPremium = async () => {
+		//fetching the razorpay key
+		const {
+			data: { key },
+		} = await axios.get(`${baseUrl}/api/payment/key`);
 
-			// post request for creating a payment order
-			const orderResponse = await axios.post(
-				`${baseUrl}/api/payment/order`,
-				{ userId },
-			);
+		// sending the post request to create a new payment order
+		const {
+			data: { orderId, amount },
+		} = await axios.post(`${baseUrl}/api/payment/order`, {
+			userId: user.id,
+		});
 
-			const { orderId, amount } = orderResponse.data;
-			if (orderResponse.data.error)
-				return toast.error(orderResponse.data.error);
-			toast.success(orderResponse.data.message);
+		var options = {
+			key, // Enter the Key ID generated from the Dashboard
+			amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+			currency: "INR",
+			name: "Mystic Coder",
+			description: "Test Transaction",
+			image: "https://example.com/your_logo",
+			order_id: orderId, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
 
-			const options = {
-				key,
-				amount,
-				currency: "INR",
-				name: "Mystic Coder",
-				description: "Test Transaction",
-				image: "https://example.com/your_logo",
-				order_id: orderId,
-
-				handler: async (response) => {
-					const { data } = await axios.post(
-						`${baseUrl}/api/payment/verify`,
-						{
-							razorpay_order_id: response.razorpay_order_id,
-							razorpay_payment_id: response.razorpay_payment_id,
-							razorpay_signature: response.razorpay_signature,
-						},
-					);
-					if (data.error) return toast.error(data.error);
-					if (data.message) {
-						localStorage.setItem(
-							"user",
-							JSON.stringify(data.userWithOrderStatus),
-						);
-						navigate("/paymentSuccess");
-					}
-				},
-
-				prefill: {
-					name: userName,
-					email: userEmail,
-					contact: "9000090000",
-				},
-				notes: {
-					address: "Razorpay Corporate Office",
-				},
-				theme: {
-					color: "#B53471",
-				},
-			};
-			const razor = new window.Razorpay(options);
-			razor.on("payment.failed", async (response) => {
+			// handler function to perform the logic if the payment will be completed successfully
+			handler: async (response) => {
 				const { data } = await axios.post(
-					`${baseUrl}/api/payment/paymentFailed`,
+					`${baseUrl}/api/payment/verify`,
 					{
-						userId,
-						orderId: response.error.metadata.order_id,
-						paymentId: response.error.metadata.payment_id,
+						razorpay_order_id: response.razorpay_order_id,
+						razorpay_payment_id: response.razorpay_payment_id,
+						razorpay_signature: response.razorpay_signature,
 					},
 				);
-				if (data.error) {
-					navigate("/paymentFailed");
-					toast.error(data.error);
+				if (data.error) return toast.error(data.error);
+				if (data.message) {
+					localStorage.setItem(
+						"user",
+						JSON.stringify(data.userWithOrderStatus),
+					);
+					navigate("/paymentSuccess");
 				}
-			});
-			razor.open();
-		} catch (error) {
-			return toast.error(error.message);
-		}
+			},
+			prefill: {
+				name: user.name,
+				email: user.email,
+				contact: "9000090000",
+			},
+			notes: {
+				address: "Razorpay Corporate Office",
+			},
+			theme: {
+				color: "#3399cc",
+			},
+		};
+
+		var razorpay = new window.Razorpay(options);
+		razorpay.on("payment.failed", async (response) => {
+			const { data } = await axios.post(
+				`${baseUrl}/api/payment/paymentFailed`,
+				{
+					orderId: response.error.metadata.order_id,
+					paymentId: response.error.metadata.payment_id,
+				},
+			);
+			if (data.error) {
+				navigate("/paymentFailed");
+				toast.error(data.error);
+			}
+		});
+
+		razorpay.open();
 	};
 
 	return (
 		<>
 			<Navbar />
-			<div className="p-4">
-				<h2 className="mb-4 text-2xl font-bold">
-					Daily Expense Tracker
-				</h2>
+			<div className="container px-4 py-8 mx-auto">
+				<h1 className="mb-4 text-2xl font-bold">Daily Expense</h1>
 
-				{/* TODO: expense form */}
-				<form onSubmit={handleSubmit} className="mb-4">
-					<div className="mb-4">
-						<label htmlFor="amount" className="block mb-1">
-							Amount:
-						</label>
+				{/* Expense form */}
+				<form className="mb-4" onSubmit={handleAddExpense}>
+					<div className="flex items-center mb-2">
+						<label className="mr-2">Amount:</label>
 						<input
 							type="number"
-							id="amount"
+							step="0.01"
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
-							className="w-full px-3 py-2 border-gray-300 rounded-md"
 							required
+							className="px-2 py-1 border border-gray-300 rounded"
 						/>
 					</div>
-					<div className="mb-4">
-						<label htmlFor="description" className="block mb-1">
-							Description:
-						</label>
+					<div className="flex items-center mb-2">
+						<label className="mr-2">Description:</label>
 						<input
 							type="text"
-							id="description"
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
-							className="w-full px-3 py-2 border-gray-300 rounded-md"
 							required
+							className="px-2 py-1 border border-gray-300 rounded"
 						/>
 					</div>
-					<div className="mb-4">
-						<label htmlFor="category" className="block mb-1">
-							Category:
-						</label>
-						<select
-							id="category"
+					<div className="flex items-center mb-4">
+						<label className="mr-2">Category:</label>
+						<input
+							type="text"
 							value={category}
 							onChange={(e) => setCategory(e.target.value)}
-							className="w-full px-3 py-2 border-gray-300 rounded-md"
 							required
-						>
-							<option value="">Select Category</option>
-							<option value="Food">Food</option>
-							<option value="Transportation">
-								Transportation
-							</option>
-							<option value="Shopping">Shopping</option>
-							<option value="Bills">Bills</option>
-							<option value="Other">Other</option>
-						</select>
+							className="px-2 py-1 border border-gray-300 rounded"
+						/>
 					</div>
-					{category === "Other" && (
-						<div className="mb-4">
-							<label
-								htmlFor="otherCategory"
-								className="block mb-1"
-							>
-								Other Category:
-							</label>
-							<input
-								type="text"
-								id="otherCategory"
-								value={otherCategory}
-								onChange={(e) =>
-									setOtherCategory(e.target.value)
-								}
-								className="w-full px-3 py-2 border-gray-300 rounded-md"
-								required
-							/>
-						</div>
-					)}
 					<button
 						type="submit"
-						className={`px-4 py-2 text-white transition-colors duration-300 bg-blue-500 rounded-md hover:bg-blue-600`}
+						className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
 					>
 						Add Expense
 					</button>
+				</form>
 
+				<div className="m-auto w-60">
+					{/* premium membership button */}
 					<button
-						onClick={handlePayment}
-						className={`p-2 ml-4 border-2 border-black rounded-md ${
+						className={`p-3 border border-black animate-bounce hover:bg-black hover:text-white transition-all duration-300 rounded-[10rem] bg-teal-300 font-semibold text-[#1B1464] ${
 							user?.status === "completed" && "hidden"
-						}  `}
+						}`}
+						onClick={handleBuyPremium}
 					>
-						Pay Now
+						Become a Premium Member
 					</button>
-
-					<span
-						className={`ml-4 bg-green-400 p-2 rounded-md hover:bg-green-600 font-semibold ${
+				</div>
+				<div className="w-64 m-auto">
+					<h1
+						className={`bg-purple-500 rounded-lg hover:scale-110 p-3 hover:cursor-pointer transition-all duration-300 text-white font-bold ${
 							user?.status !== "completed" && "hidden"
 						}`}
 					>
-						You are a premium user now
-					</span>
-				</form>
+						You Are now a Premium User
+					</h1>
+				</div>
 
-				<h3 className="mb-2 text-lg font-bold">Expense Table</h3>
-
-				{/* TODO: expense table */}
-				<table className="w-full mb-4 ">
+				<h1 className="mb-4 text-2xl font-bold">
+					Daily Expense Table of {user.name}{" "}
+				</h1>
+				{/* Expense table */}
+				<table className="w-full">
 					<thead>
 						<tr>
-							<th className="px-4 py-2 border-b-2 border-gray-300">
-								Amount
-							</th>
-							<th className="px-4 py-2 border-b-2 border-gray-300">
-								Description
-							</th>
-							<th className="px-4 py-2 border-b-2 border-gray-300">
-								Category
-							</th>
-							<th className="px-4 py-2 border-b-2 border-gray-300">
-								Actions
-							</th>
+							<th className="text-left">Amount</th>
+							<th className="text-left">Description</th>
+							<th className="text-left">Category</th>
+							<th className="text-left">Action</th>
 						</tr>
 					</thead>
 					<tbody>
-						{expenses.map((expense) => (
-							<tr key={expense.id}>
-								<td className="px-4 py-2 border-b border-gray-300">
-									{expense.amount}
-								</td>
-								<td className="px-4 py-2 border-b border-gray-300">
-									{expense.description}
-								</td>
-								<td className="px-4 py-2 border-b border-gray-300">
-									{expense.category}
-								</td>
-								<td className="px-4 py-2 border-b border-gray-300">
-									<button
-										onClick={() =>
-											handleDelete(
-												expense.id,
-												expense.amount,
-											)
-										}
-										className="text-red-500 transition-colors duration-300 hover:text-red-600"
-									>
-										Delete
-									</button>
-								</td>
-							</tr>
-						))}
+						<AnimatePresence>
+							{expenses.map((expense, index) => (
+								<motion.tr
+									key={index}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -20 }}
+									transition={{ duration: 0.3 }}
+								>
+									<td>{expense.amount}</td>
+									<td>{expense.description}</td>
+									<td>{expense.category}</td>
+									<td>
+										<button
+											onClick={() =>
+												handleDeleteExpense(
+													expense.id,
+													expense.amount,
+												)
+											}
+											className="font-bold text-red-500 hover:text-red-700"
+										>
+											Delete
+										</button>
+									</td>
+								</motion.tr>
+							))}
+						</AnimatePresence>
 					</tbody>
 				</table>
-				{/* individual expense table */}
-				{user?.status === "completed" && (
-					<div className=" mt-5">
-						<h1 className="text-2xl font-bold mb-4">
-							Expense Leaderboard
-						</h1>
-						<table className="min-w-full bg-white border border-gray-300">
-							<thead>
-								<tr>
-									<th className="py-2 px-4 border-b">
-										Amount
-									</th>
-									<th className="py-2 px-4 border-b">
-										Description
-									</th>
-									<th className="py-2 px-4 border-b">
-										Category
-									</th>
-									<th className="py-2 px-4 border-b">
-										Created By
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{allExpenses.map((expense) => (
-									<tr key={expense.id}>
-										<td className="py-2 px-4 border-b">
-											{expense.amount}
-										</td>
-										<td className="py-2 px-4 border-b">
-											{expense.description}
-										</td>
-										<td className="py-2 px-4 border-b">
-											{expense.category}
-										</td>
-										<td className="py-2 px-4 border-b">
-											{expense?.User?.name}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-				{/* total expense table */}
-				{user?.status === "completed" && (
-					<table className="min-w-full divide-y divide-gray-200">
+
+				{/* leader board only for premium users */}
+
+				<div className="container px-4 py-8 mx-auto">
+					<h1 className="mb-4 text-2xl font-bold">Leaderboard</h1>
+
+					{/* Leaderboard table */}
+					<table className="w-full">
 						<thead>
 							<tr>
-								<th className="px-6 py-3 text-left font-bold text-slate-950 uppercase tracking-wider">
-									Total Amount
-								</th>
-								<th className="px-6 py-3 text-left font-bold text-slate-960 uppercase tracking-wider">
-									Username
-								</th>
+								<th className="text-left">Total Amount</th>
+								<th className="text-left">User Name</th>
 							</tr>
 						</thead>
-						<tbody className="bg-white divide-y divide-gray-200">
-							{toatalExpensesOfEachUser.map((item, index) => (
-								<tr key={index}>
-									<td className="px-6 py-4 whitespace-nowrap">
-										{item.totalAmount}
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap">
-										{item.User.name}
-									</td>
-								</tr>
-							))}
+						<tbody>
+							<AnimatePresence>
+								{totalExpense.map((user) => (
+									<motion.tr
+										key={user.id}
+										initial={{ opacity: 0, x: -20 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 20 }}
+										transition={{ duration: 0.3 }}
+									>
+										<td>{user.totalExpenses}</td>
+										<td>{user.name}</td>
+									</motion.tr>
+								))}
+							</AnimatePresence>
 						</tbody>
 					</table>
-				)}
+				</div>
 			</div>
 		</>
 	);

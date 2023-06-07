@@ -56,7 +56,6 @@ const loginController = async (req, res) => {
 			attributes: ["orderId", "paymentId", "status"],
 		});
 
-		console.log(order);
 		if (order.length > 0) {
 			const orders = order.map((o) => ({
 				orderId: o.orderId,
@@ -69,6 +68,7 @@ const loginController = async (req, res) => {
 					id: user.id,
 					name: user.name,
 					email: user.email,
+					totalExpenses: user.totalExpenses,
 					orderId: orders[0].orderId,
 					paymentId: orders[0].paymentId,
 					status: orders[0].status,
@@ -82,6 +82,7 @@ const loginController = async (req, res) => {
 					id: user.id,
 					name: user.name,
 					email: user.email,
+					totalExpenses: user.totalExpenses,
 					orderId: "",
 					paymentId: "",
 					status: "",

@@ -9,6 +9,7 @@ const User = require("./models/UserModel");
 const Expense = require("./models/ExpenseModel");
 const paymentRouter = require("./routes/PaymentRouter");
 const Order = require("./models/OrderModel");
+const leaderboardRouter = require("./routes/LeaderBoardRouter");
 
 const app = express();
 const PORT = 8080;
@@ -47,6 +48,8 @@ app.use("/api/users", authRouter);
 app.use("/api/expense", expenseRouter);
 // Payment routes
 app.use("/api/payment", paymentRouter);
+// leaderboard routes
+app.use("/api/leaderboard", leaderboardRouter);
 
 // Start the server
 app.listen(PORT, () => {
