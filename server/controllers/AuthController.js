@@ -7,6 +7,8 @@ const saltRounds = 12;
 
 // registration controller
 const registrationController = async (req, res) => {
+	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
+	const transaction = await sequelize.transaction();
 	try {
 		const { name, email, password } = req.body;
 
@@ -20,14 +22,18 @@ const registrationController = async (req, res) => {
 		const hashedPassword = await bcrypt.hash(password, saltRounds);
 
 		// Create a new user
-		const user = await User.create({
-			name,
-			email,
-			password: hashedPassword,
-		});
-
+		const user = await User.create(
+			{
+				name,
+				email,
+				password: hashedPassword,
+			},
+			{ transaction },
+		);
+		await transaction.commit();
 		return res.json({ message: "Signup successful", user });
 	} catch (error) {
+		await transaction.rollback();
 		return res.json({ error: "Server error" });
 	}
 };
