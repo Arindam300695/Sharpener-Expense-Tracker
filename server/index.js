@@ -10,6 +10,7 @@ const Expense = require("./models/ExpenseModel");
 const paymentRouter = require("./routes/PaymentRouter");
 const Order = require("./models/OrderModel");
 const leaderboardRouter = require("./routes/LeaderBoardRouter");
+const passWordResetRouter = require("./routes/PasswordRestRouter");
 
 const app = express();
 const PORT = 8080;
@@ -50,7 +51,8 @@ app.use("/api/expense", expenseRouter);
 app.use("/api/payment", paymentRouter);
 // leaderboard routes
 app.use("/api/leaderboard", leaderboardRouter);
-
+// password reset routes
+app.use("/api/passwordReset", passWordResetRouter);
 // Start the server
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
