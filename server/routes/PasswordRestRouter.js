@@ -1,9 +1,19 @@
 /** @format */
 
 const express = require("express");
-const passwordResetController = require("../controllers/PasswordResetController");
+const {
+	sendEmailForResettingPasswordController,
+	passwordResettingController,
+	confirmResetPasswordController,
+} = require("../controllers/PasswordResetController");
+
 const passWordResetRouter = express.Router();
 
-passWordResetRouter.post("/", passwordResetController);
+passWordResetRouter.post("/", sendEmailForResettingPasswordController);
+passWordResetRouter.post("/reset-password", passwordResettingController);
+passWordResetRouter.post(
+	"/confirmResetPassword",
+	confirmResetPasswordController,
+);
 
 module.exports = passWordResetRouter;

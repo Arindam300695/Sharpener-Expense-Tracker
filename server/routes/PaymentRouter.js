@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 require("dotenv").config();
+const sequelize = require("../database/Database");
 
 const razorpay = new Razorpay({
 	key_id: process.env.key_id,

@@ -4,6 +4,7 @@ const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 const bcrypt = require("bcryptjs");
 const saltRounds = 12;
+const sequelize = require("../database/Database");
 
 // registration controller
 const registrationController = async (req, res) => {

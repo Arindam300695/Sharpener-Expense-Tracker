@@ -9,6 +9,7 @@ import PaymentSuccess from "./pages/PaymentSuccss";
 import PaymentFailedPage from "./pages/PaymentFailed";
 import Error404Page from "./pages/Error404Page";
 import ThankYouPage from "./pages/ThankYouPage";
+import ForgetPasswordReset from "./pages/ForgetPasswordReset";
 
 function App() {
 	return (
@@ -21,6 +22,10 @@ function App() {
 				<Route path="/paymentSuccess" element={<PaymentSuccess />} />
 				<Route path="/paymentFailed" element={<PaymentFailedPage />} />
 				<Route path="/thankyou" element={<ThankYouPage />} />
+				<Route
+					path="password/resetpassword/:requestId"
+					element={<ForgetPasswordReset />}
+				/>
 				<Route path="*" element={<Error404Page />} />
 			</Routes>
 		</>

@@ -2,6 +2,7 @@
 
 const Expense = require("../models/ExpenseModel");
 const User = require("../models/UserModel");
+const sequelize = require("../database/Database");
 
 // get user specific expense contorller
 const getExpensesController = async (req, res) => {

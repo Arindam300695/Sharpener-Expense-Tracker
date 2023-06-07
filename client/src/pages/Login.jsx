@@ -100,14 +100,14 @@ const Login = () => {
 		const { data } = await axios.post(`${baseUrl}/api/passwordReset`, {
 			email: passwordResetEmail,
 		});
-		if (data.error) return toast.error(data.error);
-		toast.success(data.message);
 
-		await new Promise((resolve) => setTimeout(resolve, 2200));
+		await new Promise((resolve) => setTimeout(resolve, 2000));
 		// Reset form state
 		setEmail("");
 		setShowForm(false);
 		setIsLoading(false);
+		if (data.error) return toast.error(data.error);
+		toast.success(data.message);
 	};
 	// forget passwrod fucntionality ends here
 

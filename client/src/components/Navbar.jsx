@@ -1,16 +1,17 @@
 /** @format */
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiMenu, FiX } from "react-icons/fi";
 import logo from "../assets/logo.gif";
 import { ToastContainer } from "react-toastify";
 
 const Navbar = () => {
+	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
-	const [user, setUser] = useState({});
-
+	const [user, setUser] = useState(null);
+	console.log(user);
 	const toggleMenu = () => {
 		setIsOpen(!isOpen);
 	};
@@ -20,6 +21,11 @@ const Navbar = () => {
 		if (localStorageUser !== null) setUser(localStorageUser);
 		return () => {};
 	}, []);
+
+	const logoutHandler = () => {
+		localStorage.removeItem("user");
+		navigate("/");
+	};
 
 	return (
 		<nav className="bg-[#13131b]">
@@ -68,6 +74,7 @@ const Navbar = () => {
 										<Link
 											to="/thankyou"
 											className="px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
+											onClick={logoutHandler}
 										>
 											Log out
 										</Link>
@@ -116,18 +123,38 @@ const Navbar = () => {
 					>
 						Home
 					</Link>
-					<Link
-						to="/signup"
-						className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
-					>
-						Signup
-					</Link>
-					<Link
-						to="/login"
-						className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
-					>
-						Login
-					</Link>
+					{!user ? (
+						<div>
+							<Link
+								to="/signup"
+								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
+							>
+								Signup
+							</Link>
+							<Link
+								to="/login"
+								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
+							>
+								Login
+							</Link>
+						</div>
+					) : (
+						<div>
+							<Link
+								to="/dailyExpense"
+								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
+							>
+								Daily Expense
+							</Link>
+							<Link
+								to="/"
+								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
+								onClick={logoutHandler}
+							>
+								Log Out
+							</Link>
+						</div>
+					)}
 				</div>
 			</div>
 			<ToastContainer />

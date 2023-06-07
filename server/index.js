@@ -11,6 +11,7 @@ const paymentRouter = require("./routes/PaymentRouter");
 const Order = require("./models/OrderModel");
 const leaderboardRouter = require("./routes/LeaderBoardRouter");
 const passWordResetRouter = require("./routes/PasswordRestRouter");
+const ForgotPasswordRequest = require("./models/ForgetPasswordRequestsMode");
 
 const app = express();
 const PORT = 8080;
@@ -27,6 +28,9 @@ Expense.belongsTo(User);
 
 // Defining the realtion between the user and the order model
 Order.belongsTo(User);
+
+// defining the relation between the forget password model and the user model
+ForgotPasswordRequest.belongsTo(User);
 
 // Synchronize the model with the database
 sequelize
