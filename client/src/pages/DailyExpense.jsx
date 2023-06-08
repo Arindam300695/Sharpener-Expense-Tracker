@@ -18,6 +18,21 @@ const DailyExpense = () => {
 	const [expenses, setExpenses] = useState([]);
 	const [user, setUser] = useState({});
 	const [totalExpense, setTotalExpense] = useState([]);
+	const [rows, setRows] = useState([]);
+	const [yearlyReports, setYearlyReports] = useState([]);
+	const [notes, setNotes] = useState([]);
+
+	const calculateTotal = () => {
+		const totalIncome = rows.reduce(
+			(total, row) => total + (row.income || 0),
+			0,
+		);
+		const totalExpense = rows.reduce(
+			(total, row) => total + (row.expense || 0),
+			0,
+		);
+		return totalIncome - totalExpense;
+	};
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -53,6 +68,51 @@ const DailyExpense = () => {
 		};
 
 		fetcheLeaderBoardData();
+
+		// fetching the report data
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(
+					"https://api.example.com/data",
+				);
+				setRows(response.data);
+			} catch (error) {
+				console.error("Error fetching data:", error);
+				toast.error("Error fetching data");
+			}
+		};
+
+		fetchData();
+
+		// fetching the yearly report data
+		const fetchYearlyReports = async () => {
+			try {
+				const response = await axios.get(
+					"https://api.example.com/yearly-reports",
+				);
+				setYearlyReports(response.data);
+			} catch (error) {
+				console.error("Error fetching yearly reports:", error);
+				toast.error("Error fetching yearly reports");
+			}
+		};
+
+		fetchYearlyReports();
+
+		// fetching the yearly notes based data
+		const fetchNotes = async () => {
+			try {
+				const response = await axios.get(
+					"https://api.example.com/notes?year=2023",
+				);
+				setNotes(response.data);
+			} catch (error) {
+				console.error("Error fetching notes:", error);
+				toast.error("Error fetching notes");
+			}
+		};
+
+		fetchNotes();
 	}, [user.id]);
 
 	// Handle expense submission
@@ -339,10 +399,8 @@ const DailyExpense = () => {
 				</table>
 
 				{/* leader board only for premium users */}
-
 				<div className="container px-4 py-8 mx-auto">
 					<h1 className="mb-4 text-2xl font-bold">Leaderboard</h1>
-
 					{/* Leaderboard table */}
 					<table className="w-full">
 						<thead>
@@ -366,6 +424,124 @@ const DailyExpense = () => {
 									</motion.tr>
 								))}
 							</AnimatePresence>
+						</tbody>
+					</table>
+				</div>
+
+				{/* report data only for premium members */}
+				<div>
+					<h1 className="text-xl font-bold">
+						Day to Day Expenses report
+					</h1>
+					<table className="table-auto">
+						<thead>
+							<tr>
+								<th className="px-4 py-2">Date</th>
+								<th className="px-4 py-2">Description</th>
+								<th className="px-4 py-2">Category</th>
+								<th className="px-4 py-2">Income</th>
+								<th className="px-4 py-2">Expense</th>
+							</tr>
+						</thead>
+						<tbody>
+							{rows.map((row, index) => (
+								<motion.tr
+									key={index}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -20 }}
+									transition={{ duration: 0.3 }}
+								>
+									<td className="px-4 py-2 border">
+										{row.date}
+									</td>
+									<td className="px-4 py-2 border">
+										{row.description}
+									</td>
+									<td className="px-4 py-2 border">
+										{row.category}
+									</td>
+									<td className="px-4 py-2 border">
+										{row.income}
+									</td>
+									<td className="px-4 py-2 border">
+										{row.expense}
+									</td>
+								</motion.tr>
+							))}
+						</tbody>
+					</table>
+					<div className="mt-4">
+						<strong>Total:</strong> {calculateTotal()}
+					</div>
+				</div>
+
+				{/* yearly report data only for premium members */}
+				<div>
+					<h1 className="text-xl font-bold">Yearly Report</h1>
+					<table className="table-auto">
+						<thead>
+							<tr>
+								<th className="px-4 py-2">Month</th>
+								<th className="px-4 py-2">Income</th>
+								<th className="px-4 py-2">Expense</th>
+								<th className="px-4 py-2">Savings</th>
+							</tr>
+						</thead>
+						<tbody>
+							{yearlyReports.map((report, index) => (
+								<motion.tr
+									key={index}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -20 }}
+									transition={{ duration: 0.3 }}
+								>
+									<td className="px-4 py-2 border">
+										{report.month}
+									</td>
+									<td className="px-4 py-2 border">
+										{report.income}
+									</td>
+									<td className="px-4 py-2 border">
+										{report.expense}
+									</td>
+									<td className="px-4 py-2 border">
+										{report.savings}
+									</td>
+								</motion.tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+
+				{/* yearly notes report data only for premium members */}
+				<div>
+					<h1 className="text-xl font-bold">Notes Report</h1>
+					<table className="table-auto">
+						<thead>
+							<tr>
+								<th className="px-4 py-2">Date</th>
+								<th className="px-4 py-2">Notes</th>
+							</tr>
+						</thead>
+						<tbody>
+							{notes.map((note, index) => (
+								<motion.tr
+									key={index}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -20 }}
+									transition={{ duration: 0.3 }}
+								>
+									<td className="px-4 py-2 border">
+										{note.date}
+									</td>
+									<td className="px-4 py-2 border">
+										{note.text}
+									</td>
+								</motion.tr>
+							))}
 						</tbody>
 					</table>
 				</div>
