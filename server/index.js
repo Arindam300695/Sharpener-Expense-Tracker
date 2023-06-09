@@ -12,6 +12,8 @@ const Order = require("./models/OrderModel");
 const leaderboardRouter = require("./routes/LeaderBoardRouter");
 const passWordResetRouter = require("./routes/PasswordRestRouter");
 const ForgotPasswordRequest = require("./models/ForgetPasswordRequestsMode");
+const amazons3Router = require("./amazon s3/s3Intrgration");
+const FileURL = require("./models/FileUrlModel");
 
 const app = express();
 const PORT = 8080;
@@ -31,6 +33,9 @@ Order.belongsTo(User);
 
 // defining the relation between the forget password model and the user model
 ForgotPasswordRequest.belongsTo(User);
+
+// defining the relation between the fileurl model and the user model
+FileURL.belongsTo(User);
 
 // Synchronize the model with the database
 sequelize
@@ -57,6 +62,14 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/leaderboard", leaderboardRouter);
 // password reset routes
 app.use("/api/passwordReset", passWordResetRouter);
+// amazon s3 routes
+app.use("/api/amazonS3", amazons3Router);
+// previousreports routes
+app.get("/api/previousReports", async (req, res) => {
+	const allReportsData = await FileURL.findAll();
+	res.send({ message: "hello from previous reports server", allReportsData });
+});
+
 // Start the server
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);

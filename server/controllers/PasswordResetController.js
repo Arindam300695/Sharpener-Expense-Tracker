@@ -12,12 +12,20 @@ require("dotenv").config();
 const sendEmailForResettingPasswordController = async (req, res) => {
 	const { email } = req.body;
 
+	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
+	const transaction = await sequelize.transaction();
+
 	// checking whether the user even have previously done sign up or not
 	const user = await User.findOne({ where: { email } });
 	if (user) {
-		const forgetPasswordRequest = await ForgotPasswordRequest.create({
-			UserId: user.id,
-		});
+		const forgetPasswordRequest = await ForgotPasswordRequest.create(
+			{
+				UserId: user.id,
+			},
+			{ transaction },
+		);
+
+		await transaction.commit();
 
 		try {
 			if (forgetPasswordRequest) {
@@ -51,6 +59,7 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 				});
 			}
 		} catch (error) {
+			await transaction.rollback();
 			return res.json({ error: error.message });
 		}
 	} else {
@@ -61,6 +70,7 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 // first post request which will be fired when the user will click on the sent link through the email just to check whether the link is still active or not
 const passwordResettingController = async (req, res) => {
 	const { requestId } = req.body;
+
 	try {
 		const isRequestExists = await ForgotPasswordRequest.findOne({
 			where: { id: requestId },
@@ -78,6 +88,10 @@ const passwordResettingController = async (req, res) => {
 // second post request which completely handles the password resetting logic
 const confirmResetPasswordController = async (req, res) => {
 	const { email, requestId, password } = req.body;
+
+	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
+	const transaction = await sequelize.transaction();
+
 	try {
 		// finding the user whose password is supposed to be reset
 		const user = await User.findOne({ where: { email } });
@@ -93,16 +107,18 @@ const confirmResetPasswordController = async (req, res) => {
 		// if the user exists then need to hash his new password before updating with the old one
 		const hashedPassword = await bcrypt.hash(password, saltRounds);
 		// now updating the new password with the old password
-		await user.update({ password: hashedPassword });
+		await user.update({ password: hashedPassword }, { transaction });
 		// now after successful updation we need to change the password reset request isActive status from true to false so that when user next time clicks on the same password resetting link it will throw him an error saying that the password reset link is not active/expired
 		// finding that password reset request
 		const passwordResetRequest = await ForgotPasswordRequest.findOne({
 			where: { id: requestId },
 		});
 		// now updating the status of isActive field of this requst from true to false
-		await passwordResetRequest.update({ isActive: false });
+		await passwordResetRequest.update({ isActive: false }, { transaction });
+		await transaction.commit();
 		return res.json({ message: "Password updated successfully" });
 	} catch (error) {
+		await transaction.rollback();
 		return res.json({ error: error.message });
 	}
 };

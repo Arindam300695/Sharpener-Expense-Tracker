@@ -10,6 +10,7 @@ import PaymentFailedPage from "./pages/PaymentFailed";
 import Error404Page from "./pages/Error404Page";
 import ThankYouPage from "./pages/ThankYouPage";
 import ForgetPasswordReset from "./pages/ForgetPasswordReset";
+import PreviousDowloadedReportList from "./pages/PreviousDowloadedReportList";
 
 function App() {
 	return (
@@ -25,6 +26,10 @@ function App() {
 				<Route
 					path="password/resetpassword/:requestId"
 					element={<ForgetPasswordReset />}
+				/>
+				<Route
+					path="/previousReports"
+					element={<PreviousDowloadedReportList />}
 				/>
 				<Route path="*" element={<Error404Page />} />
 			</Routes>

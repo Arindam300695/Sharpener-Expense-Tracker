@@ -11,7 +11,7 @@ const Navbar = () => {
 	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const [user, setUser] = useState(null);
-	console.log(user);
+
 	const toggleMenu = () => {
 		setIsOpen(!isOpen);
 	};
@@ -72,7 +72,6 @@ const Navbar = () => {
 											Daily Expense
 										</Link>
 										<Link
-											to="/thankyou"
 											className="px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
 											onClick={logoutHandler}
 										>
@@ -147,7 +146,6 @@ const Navbar = () => {
 								Daily Expense
 							</Link>
 							<Link
-								to="/"
 								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
 								onClick={logoutHandler}
 							>

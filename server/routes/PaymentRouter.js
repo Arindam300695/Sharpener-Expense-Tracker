@@ -83,17 +83,15 @@ paymentRouter.post("/verify", async (req, res) => {
 				where: { orderId: razorpay_order_id },
 			});
 			// now updating the order status from pending to successful/completed
-			await orderToBeUpdated.update(
-				{
-					paymentId: razorpay_payment_id,
-					status: "completed",
-				},
-				{ transaction },
-			);
+			await orderToBeUpdated.update({
+				paymentId: razorpay_payment_id,
+				status: "completed",
+			});
 			// now finding the same updated order so that now we can send that order as response to the frontend to perform preferred operations there
 			const order = await Order.findOne({
 				where: { orderId: razorpay_order_id },
 			});
+			console.log(order);
 			// as that order will contain the respective user id so based on that user id finding the user so that we can also update the user's payment status and can save that to localstorage on the front end side in order to show respective changes whenever that user will login
 			const user = await User.findOne({ where: { id: order.UserId } });
 
@@ -133,13 +131,10 @@ paymentRouter.post("/paymentFailed", async (req, res) => {
 			where: { orderId },
 		});
 		// now after finding that order we are updating the status of the order as failed
-		await orderToBeUpdated.update(
-			{
-				paymentId,
-				status: "failed",
-			},
-			{ transaction },
-		);
+		await orderToBeUpdated.update({
+			paymentId,
+			status: "failed",
+		});
 		await transaction.commit();
 		return res.json({ error: "Payment Failed" });
 	} catch (error) {

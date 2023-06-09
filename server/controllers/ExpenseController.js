@@ -11,7 +11,13 @@ const getExpensesController = async (req, res) => {
 	try {
 		const expenses = await Expense.findAll({
 			where: { UserId: userId },
-			attributes: ["id", "amount", "description", "category"],
+			attributes: [
+				"id",
+				"amount",
+				"description",
+				"category",
+				"createdAt",
+			],
 		});
 
 		res.json({ message: "expenses fetched successfullyfd", expenses });
