@@ -19,6 +19,8 @@ const DailyExpense = () => {
 	const [expenses, setExpenses] = useState([]);
 	const [user, setUser] = useState({});
 	const [totalExpense, setTotalExpense] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [expensesPerPage] = useState(10);
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -249,6 +251,27 @@ const DailyExpense = () => {
 		}
 	};
 
+	const indexOfLastExpense = currentPage * expensesPerPage;
+	const indexOfFirstExpense = indexOfLastExpense - expensesPerPage;
+	const currentExpenses = expenses.slice(
+		indexOfFirstExpense,
+		indexOfLastExpense,
+	);
+
+	// Handle pagination: Go to the next page
+	const nextPage = () => {
+		if (currentPage < Math.ceil(expenses.length / expensesPerPage)) {
+			setCurrentPage(currentPage + 1);
+		}
+	};
+
+	// Handle pagination: Go to the previous page
+	const prevPage = () => {
+		if (currentPage > 1) {
+			setCurrentPage(currentPage - 1);
+		}
+	};
+
 	return (
 		<>
 			<Navbar />
@@ -296,8 +319,8 @@ const DailyExpense = () => {
 					</button>
 				</form>
 
+				{/* premium membership button */}
 				<div className="m-auto w-60">
-					{/* premium membership button */}
 					<button
 						className={`p-3 border border-black animate-bounce hover:bg-black hover:text-white transition-all duration-300 rounded-[10rem] bg-teal-300 font-semibold text-[#1B1464] ${
 							user?.status === "completed" && "hidden"
@@ -322,46 +345,79 @@ const DailyExpense = () => {
 					Daily Expense Table of {user.name}{" "}
 				</h1>
 				{/* Expense table */}
-				<table className="w-full">
-					<thead>
-						<tr>
-							<th className="text-left">Amount</th>
-							<th className="text-left">Description</th>
-							<th className="text-left">Category</th>
-							<th className="text-left">Action</th>
-						</tr>
-					</thead>
-					<tbody>
-						<AnimatePresence>
-							{expenses.map((expense, index) => (
-								<motion.tr
-									key={index}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -20 }}
-									transition={{ duration: 0.3 }}
-								>
-									<td>{expense.amount}</td>
-									<td>{expense.description}</td>
-									<td>{expense.category}</td>
-									<td>
-										<button
-											onClick={() =>
-												handleDeleteExpense(
-													expense.id,
-													expense.amount,
-												)
-											}
-											className="font-bold text-red-500 hover:text-red-700"
-										>
-											Delete
-										</button>
-									</td>
-								</motion.tr>
-							))}
-						</AnimatePresence>
-					</tbody>
-				</table>
+				<div>
+					<table className="w-full">
+						<thead>
+							<tr>
+								<th className="text-left">Amount</th>
+								<th className="text-left">Description</th>
+								<th className="text-left">Category</th>
+								<th className="text-left">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<AnimatePresence>
+								{currentExpenses.map((expense, index) => (
+									<motion.tr
+										key={index}
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -20 }}
+										transition={{ duration: 0.3 }}
+									>
+										<td>{expense.amount}</td>
+										<td>{expense.description}</td>
+										<td>{expense.category}</td>
+										<td>
+											<button
+												onClick={() =>
+													handleDeleteExpense(
+														expense.id,
+														expense.amount,
+													)
+												}
+												className="font-bold text-red-500 hover:text-red-700"
+											>
+												Delete
+											</button>
+										</td>
+									</motion.tr>
+								))}
+							</AnimatePresence>
+						</tbody>
+					</table>
+
+					{/* Pagination controls */}
+					<div className="flex justify-between">
+						<button
+							onClick={prevPage}
+							disabled={currentPage === 1}
+							className="p-3 m-2 font-semibold bg-red-500 rounded-md cursor-pointer"
+						>
+							Previous Page
+						</button>
+						<button
+							onClick={nextPage}
+							disabled={
+								currentPage ===
+								Math.ceil(expenses.length / expensesPerPage)
+							}
+							className="p-3 m-2 bg-green-500 rounded-md cursor-pointer"
+						>
+							Next Page
+						</button>
+					</div>
+
+					{/* Display the total number of expenses and the last page */}
+					<div className="flex justify-center gap-4">
+						<h1>Total Expenses: {expenses.length}</h1>
+						<h1>
+							{" "}
+							Last Page:{" "}
+							{Math.ceil(expenses.length / expensesPerPage)}
+						</h1>
+					</div>
+				</div>
 
 				{/* leader board only for premium users */}
 				<div
