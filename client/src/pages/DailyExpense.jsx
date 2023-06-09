@@ -20,7 +20,16 @@ const DailyExpense = () => {
 	const [user, setUser] = useState({});
 	const [totalExpense, setTotalExpense] = useState([]);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [expensesPerPage] = useState(10);
+	const [expensesPerPage, setExpensesPerPage] = useState(() => {
+		const storedPerPage = localStorage.getItem("expensesPerPage");
+		return storedPerPage ? parseInt(storedPerPage) : 5; // Set a default value of 10 if no preference is found
+	});
+
+	const handleExpensesPerPageChange = (event) => {
+		const perPage = parseInt(event.target.value);
+		setExpensesPerPage(perPage);
+		localStorage.setItem("expensesPerPage", perPage.toString());
+	};
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
@@ -387,12 +396,33 @@ const DailyExpense = () => {
 						</tbody>
 					</table>
 
+					{/* giving the user the option to set how many expenses per page he/she wants to see */}
+					<div className="m-auto mt-4 w-80">
+						<label
+							htmlFor="expensesPerPage"
+							className="font-semibold"
+						>
+							Expenses per Page:
+						</label>
+						<select
+							id="expensesPerPage"
+							value={expensesPerPage}
+							onChange={handleExpensesPerPageChange}
+							className="bg-red-400"
+						>
+							<option value="5">5</option>
+							<option value="8">8</option>
+							<option value="10">10</option>
+							<option value="20">20</option>
+							<option value="40">40</option>
+						</select>
+					</div>
 					{/* Pagination controls */}
 					<div className="flex justify-between">
 						<button
 							onClick={prevPage}
 							disabled={currentPage === 1}
-							className="p-3 m-2 font-semibold bg-red-500 rounded-md cursor-pointer"
+							className="p-3 m-2 font-semibold transition-all duration-300 bg-red-400 rounded-md cursor-pointer hover:bg-red-500"
 						>
 							Previous Page
 						</button>
@@ -402,7 +432,7 @@ const DailyExpense = () => {
 								currentPage ===
 								Math.ceil(expenses.length / expensesPerPage)
 							}
-							className="p-3 m-2 bg-green-500 rounded-md cursor-pointer"
+							className="p-3 m-2 font-semibold transition-all duration-300 bg-green-400 rounded-md cursor-pointer hover:bg-green-500"
 						>
 							Next Page
 						</button>
