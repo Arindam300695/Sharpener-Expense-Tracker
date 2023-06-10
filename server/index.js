@@ -48,16 +48,13 @@ FileURL.belongsTo(User);
 
 // Synchronize the model with the database
 sequelize
-	.sync({ force: true })
+	.sync({})
 	.then(() => {
 		console.log("Database synchronized.");
 	})
 	.catch((error) => {
 		console.error("Unable to synchronize the database:", error);
 	});
-
-// Middleware
-app.use(express.json());
 
 // Routes
 

@@ -52,20 +52,22 @@ const DailyExpense = () => {
 		fetchExpenses();
 
 		// fetching the leaderboard data
-		const fetcheLeaderBoardData = async () => {
-			try {
-				const { data } = await axios.get(`${baseUrl}/api/leaderboard`); // Replace with your API endpoint
-				const sortedData = data.sort(
-					(a, b) => b.totalExpenses - a.totalExpenses,
-				);
-				setTotalExpense(sortedData);
-			} catch (error) {
-				toast.error(error.message);
-			}
-		};
-
 		fetcheLeaderBoardData();
 	}, [user.id, navigate]);
+
+	// fetching the leaderboard data
+	const fetcheLeaderBoardData = async () => {
+		try {
+			const { data } = await axios.get(`${baseUrl}/api/leaderboard`); // Replace with your API endpoint
+
+			const sortedData = data?.sort(
+				(a, b) => b.totalExpenses - a.totalExpenses,
+			);
+			setTotalExpense(sortedData);
+		} catch (error) {
+			toast.error(error.message);
+		}
+	};
 
 	// Handle expense submission
 	const handleAddExpense = async (e) => {
@@ -101,18 +103,7 @@ const DailyExpense = () => {
 			setExpenses((prev) => [...prev, data.expense]);
 
 			// writing the logic to sort the total expense of each user whenever the logged in user will create or add a new expense
-			const userTotalExpense = [
-				...totalExpense.filter((item) => item.id !== user.id),
-				...totalExpense.filter(
-					(item) =>
-						item.id === user.id &&
-						(item.totalExpenses += Number(data.expense.amount)),
-				),
-			];
-			const sortedUserTotalExpense = userTotalExpense.sort(
-				(a, b) => b.totalExpenses - a.totalExpenses,
-			);
-			setTotalExpense(sortedUserTotalExpense);
+			fetcheLeaderBoardData();
 			// const sortedUserTotalExpense = userTotalExpense.sort((a,b)=>b.)
 		} catch (error) {
 			toast.error(error.message);
@@ -120,7 +111,7 @@ const DailyExpense = () => {
 	};
 
 	// Handle expense deletion
-	const handleDeleteExpense = async (expenseId, expenseAmount) => {
+	const handleDeleteExpense = async (expenseId) => {
 		try {
 			// Send API request to delete expense
 			const { data } = await axios.delete(
@@ -144,18 +135,7 @@ const DailyExpense = () => {
 			);
 
 			// writing the logic to sort total expense of each user whenever the logged in user will delete any expense
-			const userTotalExpense = [
-				...totalExpense.filter((item) => item.id !== user.id),
-				...totalExpense.filter(
-					(item) =>
-						item.id === user.id &&
-						(item.totalExpenses -= Number(expenseAmount)),
-				),
-			];
-			const sortedUserTotalExpense = userTotalExpense.sort(
-				(a, b) => b.totalExpenses - a.totalExpenses,
-			);
-			setTotalExpense(sortedUserTotalExpense);
+			fetcheLeaderBoardData();
 		} catch (error) {
 			toast.error(error.message);
 		}
@@ -383,7 +363,6 @@ const DailyExpense = () => {
 												onClick={() =>
 													handleDeleteExpense(
 														expense.id,
-														expense.amount,
 													)
 												}
 												className="font-bold text-red-500 hover:text-red-700"
@@ -497,14 +476,21 @@ const DailyExpense = () => {
 						Download detailed report
 					</button>
 
-					<Link
-						to="/previousReports"
-						className={`mt-4 font-semibold ${
+					<h1
+						className={`p-2 m-4 text-center rounded-md bg-violet-400 w-60 ${
 							user?.status !== "completed" && "hidden"
 						}`}
 					>
-						Show me my previous report links list
-					</Link>
+						{" "}
+						<Link
+							to="/previousReports"
+							className={`mt-4 font-semibold ${
+								user?.status !== "completed" && "hidden"
+							}`}
+						>
+							Show me my previous report links list
+						</Link>
+					</h1>
 				</div>
 
 				<div

@@ -9,7 +9,7 @@ const getExpensesController = async (req, res) => {
 	const { userId } = req.params;
 	try {
 		const expenses = await Expense.findAll({
-			where: { UserId: userId },
+			where: { ExpenseUserId: userId },
 			attributes: [
 				"id",
 				"amount",
@@ -30,14 +30,14 @@ const addExpenseController = async (req, res) => {
 	const transaction = await sequelize.transaction();
 
 	const { amount, description, category, userId } = req.body;
-	console.log(amount, description, category, userId);
+
 	try {
 		const expense = await Expense.create(
 			{
 				amount,
 				description,
 				category,
-				UserId: userId,
+				ExpenseUserId: userId,
 			},
 			{ transaction },
 		);
@@ -45,7 +45,7 @@ const addExpenseController = async (req, res) => {
 			where: { id: userId },
 			attributes: ["id", "email", "name", "totalExpenses"],
 		});
-		console.log(expense, user);
+
 		await user.update(
 			{
 				totalExpenses: (user.totalExpenses += Number(expense.amount)),

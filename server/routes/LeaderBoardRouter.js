@@ -9,6 +9,7 @@ leaderboardRouter.get("/", async (req, res) => {
 		const totalExpenses = await User.findAll({
 			attributes: ["id", "totalExpenses", "name"],
 		});
+
 		res.json(totalExpenses);
 	} catch (error) {
 		return res.json({ error: error.message });

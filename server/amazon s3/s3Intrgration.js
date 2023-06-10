@@ -36,7 +36,7 @@ amazons3Router.post("/upload/:userId", async (req, res) => {
 		// Fetch expenses from the database based on user ID
 		/* This code is retrieving all expenses from a database where the userId matches the userId provided. */
 		const expenses = await Expense.findAll({
-			where: { userId },
+			where: { ExpenseUserId: userId },
 		});
 
 		// Convert expenses to text
@@ -68,7 +68,7 @@ amazons3Router.post("/upload/:userId", async (req, res) => {
 		/* This code is creating a file URL object with the specified URL and user ID, and then saving it to the database using a transaction. */
 		const fileUrl = await FileURL.create({
 			url: s3Data.Location,
-			UserId: userId,
+			ExpenseUserId: userId,
 		});
 
 		await transaction.commit();

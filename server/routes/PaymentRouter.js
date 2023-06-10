@@ -44,7 +44,7 @@ paymentRouter.post("/order", async (req, res) => {
 			{
 				paymentId: "",
 				orderId: order.id,
-				UserId: userId,
+				ExpenseUserId: userId,
 			},
 			{ transaction },
 		);
@@ -93,7 +93,9 @@ paymentRouter.post("/verify", async (req, res) => {
 			});
 			console.log(order);
 			// as that order will contain the respective user id so based on that user id finding the user so that we can also update the user's payment status and can save that to localstorage on the front end side in order to show respective changes whenever that user will login
-			const user = await User.findOne({ where: { id: order.UserId } });
+			const user = await User.findOne({
+				where: { id: order.ExpenseUserId },
+			});
 
 			await transaction.commit();
 

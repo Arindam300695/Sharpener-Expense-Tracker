@@ -72,7 +72,7 @@ const loginController = async (req, res) => {
 
 		/* This code is finding all orders associated with a particular user by their UserId, and then selecting only certain attributes (orderId, paymentId, and status) to be returned. The status must be "completed" for the order to be included in the results. */
 		const order = await Order.findAll({
-			where: { UserId: user.id, status: "completed" },
+			where: { ExpenseUserId: user.id, status: "completed" },
 			attributes: ["orderId", "paymentId", "status"],
 		});
 
