@@ -12,7 +12,6 @@ require("dotenv").config();
 const sendEmailForResettingPasswordController = async (req, res) => {
 	const { email } = req.body;
 	const otp = Math.floor(Math.random() * 1000000);
-	console.log(otp);
 
 	// checking whether the user even have previously done sign up or not
 	const user = await User.findOne({ where: { email } });
@@ -67,7 +66,6 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 // first post request which will be fired when the user will click on the sent link through the email just to check whether the link is still active or not
 const passwordResettingController = async (req, res) => {
 	const { requestId } = req.params;
-	console.log(requestId);
 
 	try {
 		const isRequestExists = await ForgotPasswordRequest.findOne({

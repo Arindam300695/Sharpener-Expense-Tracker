@@ -20,9 +20,6 @@ const ForgetPasswordReset = () => {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
-	console.log(isAbleToResetPassword);
-	console.log("passwordResetForm: ", passwordResetForm);
-
 	useEffect(() => {
 		const user = JSON.parse(localStorage.getItem("user"));
 		const forgetPasswordRequest = JSON.parse(
@@ -34,8 +31,6 @@ const ForgetPasswordReset = () => {
 		}
 
 		if (user === null && forgetPasswordRequest === null) navigate("/");
-
-		console.log(user, forgetPasswordRequest);
 
 		const verifyingPasswordResetAbility = async () => {
 			const { data } = await axios.get(
