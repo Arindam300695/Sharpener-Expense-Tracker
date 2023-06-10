@@ -7,7 +7,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const baseUrl = "https://expense-tracker-ri7u.onrender.com";
+const baseUrl = "http://localhost:8080";
 
 const Signup = () => {
 	const navigate = useNavigate();
@@ -170,11 +170,11 @@ const Signup = () => {
 				</form>
 
 				{isModalOpen && (
-					<div className="fixed inset-0 flex items-center justify-center z-50">
+					<div className="fixed inset-0 z-50 flex items-center justify-center">
 						<div className="fixed inset-0 bg-black opacity-50"></div>
-						<div className="bg-white rounded-lg p-6 z-10">
+						<div className="z-10 p-6 bg-white rounded-lg">
 							<div className="mt-4">
-								<h2 className="text-xl font-bold mb-2">
+								<h2 className="mb-2 text-xl font-bold">
 									Redirecting you to the Login page
 								</h2>
 								<p className="text-gray-700">

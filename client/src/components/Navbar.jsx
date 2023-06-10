@@ -1,14 +1,13 @@
 /** @format */
 
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiMenu, FiX } from "react-icons/fi";
 import logo from "../assets/logo.gif";
 import { ToastContainer } from "react-toastify";
 
 const Navbar = () => {
-	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const [user, setUser] = useState(null);
 
@@ -24,7 +23,6 @@ const Navbar = () => {
 
 	const logoutHandler = () => {
 		localStorage.removeItem("user");
-		navigate("/");
 	};
 
 	return (
@@ -72,6 +70,7 @@ const Navbar = () => {
 											Daily Expense
 										</Link>
 										<Link
+											to="/"
 											className="px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
 											onClick={logoutHandler}
 										>
@@ -146,6 +145,7 @@ const Navbar = () => {
 								Daily Expense
 							</Link>
 							<Link
+								to="/"
 								className="block px-3 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
 								onClick={logoutHandler}
 							>

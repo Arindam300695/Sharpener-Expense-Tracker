@@ -7,7 +7,6 @@ const sequelize = require("../database/Database");
 // get user specific expense contorller
 const getExpensesController = async (req, res) => {
 	const { userId } = req.params;
-
 	try {
 		const expenses = await Expense.findAll({
 			where: { UserId: userId },
@@ -19,7 +18,6 @@ const getExpensesController = async (req, res) => {
 				"createdAt",
 			],
 		});
-
 		res.json({ message: "expenses fetched successfullyfd", expenses });
 	} catch (error) {
 		res.json({ error: error.message });
@@ -47,6 +45,7 @@ const addExpenseController = async (req, res) => {
 			where: { id: userId },
 			attributes: ["id", "email", "name", "totalExpenses"],
 		});
+		console.log(expense, user);
 		await user.update(
 			{
 				totalExpenses: (user.totalExpenses += Number(expense.amount)),

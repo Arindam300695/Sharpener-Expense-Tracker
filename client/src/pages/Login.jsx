@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const baseUrl = "https://expense-tracker-ri7u.onrender.com";
+const baseUrl = "http://localhost:8080";
 
 const Login = () => {
 	const navigate = useNavigate();

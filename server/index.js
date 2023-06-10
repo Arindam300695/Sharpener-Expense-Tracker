@@ -34,7 +34,7 @@ app.use(morgan("combined", { stream: accessLogStream }));
 
 // setting up relation between user and expense model
 // Define the associations
-User.hasMany(Expense);
+
 Expense.belongsTo(User);
 
 // Defining the realtion between the user and the order model
@@ -48,7 +48,7 @@ FileURL.belongsTo(User);
 
 // Synchronize the model with the database
 sequelize
-	.sync({})
+	.sync({ force: true })
 	.then(() => {
 		console.log("Database synchronized.");
 	})

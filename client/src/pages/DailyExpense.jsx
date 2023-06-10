@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-const baseUrl = "https://expense-tracker-ri7u.onrender.com";
+const baseUrl = "http://localhost:8080";
 
 const DailyExpense = () => {
 	const navigate = useNavigate();
@@ -33,6 +33,7 @@ const DailyExpense = () => {
 
 	useEffect(() => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
+		if (localStorageUser == null) navigate("/");
 		if (localStorageUser !== null) setUser(localStorageUser);
 
 		// Fetch user-specific expenses
@@ -64,7 +65,7 @@ const DailyExpense = () => {
 		};
 
 		fetcheLeaderBoardData();
-	}, [user.id]);
+	}, [user.id, navigate]);
 
 	// Handle expense submission
 	const handleAddExpense = async (e) => {
