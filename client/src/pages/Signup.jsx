@@ -7,7 +7,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const baseUrl = "https://expense-tracker-m3n5.onrender.com";
+const baseUrl = "https://expense-tracker-1o1h.onrender.com";
 
 const Signup = () => {
 	const navigate = useNavigate();

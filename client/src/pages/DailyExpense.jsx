@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import moment from "moment";
 
-const baseUrl = "https://expense-tracker-m3n5.onrender.com";
+const baseUrl = "https://expense-tracker-1o1h.onrender.com";
 
 const DailyExpense = () => {
 	const navigate = useNavigate();

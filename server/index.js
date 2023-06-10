@@ -71,8 +71,11 @@ app.use("/api/passwordReset", passWordResetRouter);
 // amazon s3 routes
 app.use("/api/amazonS3", amazons3Router);
 // previousreports routes
-app.get("/api/previousReports", async (req, res) => {
-	const allReportsData = await FileURL.findAll();
+app.get("/api/previousReports/:userId", async (req, res) => {
+	const { userId } = req.params;
+	const allReportsData = await FileURL.findAll({
+		where: { ExpenseUserId: userId },
+	});
 	res.send({ message: "hello from previous reports server", allReportsData });
 });
 

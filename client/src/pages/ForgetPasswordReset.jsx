@@ -7,7 +7,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 
-const baseUrl = "https://expense-tracker-m3n5.onrender.com";
+const baseUrl = "https://expense-tracker-1o1h.onrender.com";
 
 const ForgetPasswordReset = () => {
 	const navigate = useNavigate();

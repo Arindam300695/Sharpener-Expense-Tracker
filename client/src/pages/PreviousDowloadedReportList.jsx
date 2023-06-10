@@ -5,14 +5,17 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import moment from "moment";
 
-const baseUrl = "https://expense-tracker-m3n5.onrender.com";
+const baseUrl = "https://expense-tracker-1o1h.onrender.com";
 
 const PreviousDowloadedReportList = () => {
 	const [downLoadedReportList, setDonwloadedReportList] = useState([]);
 
 	useEffect(() => {
+		const localStorageUser = JSON.parse(localStorage.getItem("user"));
 		const fetchPreviousDowloadedReport = async () => {
-			const { data } = await axios.get(`${baseUrl}/api/previousReports`);
+			const { data } = await axios.get(
+				`${baseUrl}/api/previousReports${localStorageUser.id}`,
+			);
 			setDonwloadedReportList(data.allReportsData);
 		};
 		fetchPreviousDowloadedReport();
