@@ -63,7 +63,7 @@ const Signup = () => {
 					{ name, email, password },
 				);
 				const data = response.data;
-				console.log(data);
+
 				// Display success message
 				if (data.message) {
 					toast.success(data.message);

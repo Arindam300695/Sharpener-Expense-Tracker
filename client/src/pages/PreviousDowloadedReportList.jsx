@@ -14,8 +14,9 @@ const PreviousDowloadedReportList = () => {
 		const localStorageUser = JSON.parse(localStorage.getItem("user"));
 		const fetchPreviousDowloadedReport = async () => {
 			const { data } = await axios.get(
-				`${baseUrl}/api/previousReports${localStorageUser.id}`,
+				`${baseUrl}/api/previousReports/${localStorageUser.id}`,
 			);
+
 			setDonwloadedReportList(data.allReportsData);
 		};
 		fetchPreviousDowloadedReport();
