@@ -12,20 +12,12 @@ require("dotenv").config();
 const sendEmailForResettingPasswordController = async (req, res) => {
 	const { email } = req.body;
 
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
-
 	// checking whether the user even have previously done sign up or not
 	const user = await User.findOne({ where: { email } });
 	if (user) {
-		const forgetPasswordRequest = await ForgotPasswordRequest.create(
-			{
-				ExpenseUserId: user.id,
-			},
-			{ transaction },
-		);
-
-		await transaction.commit();
+		const forgetPasswordRequest = await ForgotPasswordRequest.create({
+			ExpenseUserId: user.id,
+		});
 
 		try {
 			if (forgetPasswordRequest) {
@@ -59,7 +51,6 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 				});
 			}
 		} catch (error) {
-			await transaction.rollback();
 			return res.json({ error: error.message });
 		}
 	} else {

@@ -28,10 +28,6 @@ amazons3Router.post("/upload/:userId", async (req, res) => {
 	/* This code is retrieving the userId parameter from an HTTP request and assigning it to the constant variable userId. */
 	const userId = req.params.userId;
 
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	/* This code creates a transaction using the Sequelize library, which allows the code to execute a series of database operations as a single atomic unit. This ensures that all operations either complete successfully, or none of them are applied if any of them fail. */
-	const transaction = await sequelize.transaction();
-
 	try {
 		// Fetch expenses from the database based on user ID
 		/* This code is retrieving all expenses from a database where the userId matches the userId provided. */
@@ -65,16 +61,14 @@ amazons3Router.post("/upload/:userId", async (req, res) => {
 
 		// File uploaded successfully
 		// after successful upload of the file we need to save that link into the database
-		/* This code is creating a file URL object with the specified URL and user ID, and then saving it to the database using a transaction. */
+
 		const fileUrl = await FileURL.create({
 			url: s3Data.Location,
 			ExpenseUserId: userId,
 		});
 
-		await transaction.commit();
 		res.json({ message: "File uploaded to S3", urlLink: s3Data.Location });
 	} catch (error) {
-		await transaction.rollback();
 		return res.json({
 			error: "Failed to fetch expenses from the database or upload file to S3",
 		});

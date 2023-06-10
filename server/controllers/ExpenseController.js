@@ -26,45 +26,32 @@ const getExpensesController = async (req, res) => {
 
 // add expense controller
 const addExpenseController = async (req, res) => {
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
-
 	const { amount, description, category, userId } = req.body;
 
 	try {
-		const expense = await Expense.create(
-			{
-				amount,
-				description,
-				category,
-				ExpenseUserId: userId,
-			},
-			{ transaction },
-		);
+		const expense = await Expense.create({
+			amount,
+			description,
+			category,
+			ExpenseUserId: userId,
+		});
 		const user = await User.findOne({
 			where: { id: userId },
 			attributes: ["id", "email", "name", "totalExpenses"],
 		});
 
-		await user.update(
-			{
-				totalExpenses: (user.totalExpenses += Number(expense.amount)),
-			},
-			{ transaction },
-		);
-		await transaction.commit();
+		await user.update({
+			totalExpenses: (user.totalExpenses += Number(expense.amount)),
+		});
+
 		res.json({ message: "expense created successfully", expense, user });
 	} catch (error) {
-		await transaction.rollback();
 		res.json({ error: error.message });
 	}
 };
 
 // delete expense controller
 const deleteExpenseController = async (req, res) => {
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
-
 	const { id, userId } = req.params;
 
 	try {
@@ -73,19 +60,15 @@ const deleteExpenseController = async (req, res) => {
 			where: { id: userId },
 			attributes: ["id", "email", "name", "totalExpenses"],
 		});
-		await user.update(
-			{
-				totalExpenses: (user.totalExpenses -= Number(
-					deletedExpense.amount,
-				)),
-			},
-			{ transaction },
-		);
-		await deletedExpense.destroy({ transaction });
-		await transaction.commit();
+		await user.update({
+			totalExpenses: (user.totalExpenses -= Number(
+				deletedExpense.amount,
+			)),
+		});
+		await deletedExpense.destroy();
+
 		res.json({ message: "expense deleted successfully", user });
 	} catch (error) {
-		await transaction.rollback();
 		res.json({ error: error.message });
 	}
 };

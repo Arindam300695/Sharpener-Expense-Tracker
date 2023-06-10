@@ -25,9 +25,6 @@ paymentRouter.get("/key", async (req, res) => {
 
 // route for crating an order
 paymentRouter.post("/order", async (req, res) => {
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
-
 	const { userId } = req.body;
 	console.log(userId);
 
@@ -40,31 +37,24 @@ paymentRouter.post("/order", async (req, res) => {
 		const order = await razorpay.orders.create(options);
 
 		// creating a new order in order to save that in the databse with default status pending
-		await Order.create(
-			{
-				paymentId: "",
-				orderId: order.id,
-				ExpenseUserId: userId,
-			},
-			{ transaction },
-		);
-		await transaction.commit();
+		await Order.create({
+			paymentId: "",
+			orderId: order.id,
+			ExpenseUserId: userId,
+		});
+
 		return res.json({
 			message: "Payment initiated",
 			orderId: order.id,
 			amount: order.amount,
 		});
 	} catch (error) {
-		await transaction.rollback();
 		res.json({ error: "Failed to initiate payment" });
 	}
 });
 
 // route for verifying the payment
 paymentRouter.post("/verify", async (req, res) => {
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
-
 	try {
 		const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
 			req.body;
@@ -97,8 +87,6 @@ paymentRouter.post("/verify", async (req, res) => {
 				where: { id: order.ExpenseUserId },
 			});
 
-			await transaction.commit();
-
 			// sending the user and his/her payment status as response to the front end
 			res.send({
 				message: "Payment completed successfully",
@@ -113,7 +101,6 @@ paymentRouter.post("/verify", async (req, res) => {
 				},
 			});
 		} else {
-			await transaction.rollback();
 			res.json({ error: "Not Authenticated" });
 		}
 	} catch (error) {
@@ -123,8 +110,6 @@ paymentRouter.post("/verify", async (req, res) => {
 
 // route for handeling payment failed
 paymentRouter.post("/paymentFailed", async (req, res) => {
-	// need to do the sequelize transaction so that if any error occurs during api calls then that should not get reflected in the database
-	const transaction = await sequelize.transaction();
 	try {
 		const { orderId, paymentId } = req.body;
 
@@ -137,10 +122,9 @@ paymentRouter.post("/paymentFailed", async (req, res) => {
 			paymentId,
 			status: "failed",
 		});
-		await transaction.commit();
+
 		return res.json({ error: "Payment Failed" });
 	} catch (error) {
-		await transaction.rollback();
 		return res.json({ error: error.message });
 	}
 });
