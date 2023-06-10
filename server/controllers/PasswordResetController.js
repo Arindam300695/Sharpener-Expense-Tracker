@@ -36,7 +36,7 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 					to: email,
 					subject:
 						"Hello from Nodemailer, This is just a dummy email",
-					text: `http://localhost:5173/password/resetpassword/${forgetPasswordRequest.id}`,
+					text: `https://keen-choux-6e6a73.netlify.app/password/resetpassword/${forgetPasswordRequest.id}`,
 					// You can also use HTML for the email body
 					// html: '<h1>This is the body of the email</h1>'
 				};
