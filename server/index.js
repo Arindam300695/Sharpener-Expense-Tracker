@@ -14,14 +14,22 @@ const passWordResetRouter = require("./routes/PasswordRestRouter");
 const ForgotPasswordRequest = require("./models/ForgetPasswordRequestsMode");
 const amazons3Router = require("./amazon s3/s3Intrgration");
 const FileURL = require("./models/FileUrlModel");
-
+const helmet = require("helmet");
 const app = express();
-const PORT = 8080;
+const morgan = require("morgan");
+const fs = require("fs");
+
+const accessLogStream = fs.createReadStream(
+	path.join(__dirname, "access.log"),
+	{ flags: "a" },
+);
 
 // injecting express middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(morgan("combined", { stream: accessLogStream }));
 
 // setting up relation between user and expense model
 // Define the associations
@@ -71,6 +79,6 @@ app.get("/api/previousReports", async (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
+app.listen(process.env.PORT || 8080, () => {
+	console.log(`Server is running on port ${process.env.PORT || 8080}`);
 });
