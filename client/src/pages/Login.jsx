@@ -123,9 +123,9 @@ const Login = () => {
 	return (
 		<>
 			<Navbar />
-			<div className="flex items-center justify-center h-screen">
+			<div className="max-w-md p-6 mx-auto my-10 bg-white rounded-lg shadow-md">
 				{/* normal login form starts here */}
-				<div className="w-1/3 p-8 bg-white rounded-md shadow-md">
+				<div className=" p-8 rounded-md ">
 					<form onSubmit={handleSubmit}>
 						<h2 className="mb-4 text-2xl font-bold">Login</h2>
 						<div className="mb-4">
