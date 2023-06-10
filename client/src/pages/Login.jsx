@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const baseUrl = "https://expense-tracker-1o1h.onrender.com";
+const baseUrl = "http://localhost:8080";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -101,13 +101,22 @@ const Login = () => {
 			email: passwordResetEmail,
 		});
 
-		await new Promise((resolve) => setTimeout(resolve, 2000));
+		// await new Promise((resolve) => setTimeout(resolve, 2000));
 		// Reset form state
 		setEmail("");
 		setShowForm(false);
 		setIsLoading(false);
 		if (data.error) return toast.error(data.error);
-		toast.success(data.message);
+		else {
+			localStorage.setItem(
+				"forgetPasswords",
+				JSON.stringify(data.forgetPasswordRequest),
+			);
+			toast.success(data.message);
+			setTimeout(() => {
+				navigate("/password/resetpassword");
+			}, 1500);
+		}
 	};
 	// forget passwrod fucntionality ends here
 

@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import moment from "moment";
 
-const baseUrl = "https://expense-tracker-1o1h.onrender.com";
+const baseUrl = "http://localhost:8080";
 
 const PreviousDowloadedReportList = () => {
 	const [downLoadedReportList, setDonwloadedReportList] = useState([]);

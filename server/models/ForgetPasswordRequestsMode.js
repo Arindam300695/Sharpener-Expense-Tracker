@@ -14,6 +14,10 @@ const ForgotPasswordRequest = sequelize.define("ForgotPasswordRequest", {
 		type: DataTypes.BOOLEAN,
 		defaultValue: true,
 	},
+	otp: {
+		type: DataTypes.INTEGER,
+		allowNull: false,
+	},
 });
 
 module.exports = ForgotPasswordRequest;

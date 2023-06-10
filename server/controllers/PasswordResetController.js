@@ -11,12 +11,15 @@ require("dotenv").config();
 // very first post request that will be fired from the user side if any user wants to reset his/her password and this controller will simply check if the user exists with the given email id that he/she is provided and if the user exists in our database then we are just creating the password reset request for that user and sending the user password reset link
 const sendEmailForResettingPasswordController = async (req, res) => {
 	const { email } = req.body;
+	const otp = Math.floor(Math.random() * 1000000);
+	console.log(otp);
 
 	// checking whether the user even have previously done sign up or not
 	const user = await User.findOne({ where: { email } });
 	if (user) {
 		const forgetPasswordRequest = await ForgotPasswordRequest.create({
 			ExpenseUserId: user.id,
+			otp,
 		});
 
 		try {
@@ -35,8 +38,8 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 					from: process.env.nodemailer_user,
 					to: email,
 					subject:
-						"Hello from Nodemailer, This is just a dummy email",
-					text: `https://keen-choux-6e6a73.netlify.app/password/resetpassword/${forgetPasswordRequest.id}`,
+						"Hello from Nodemailer, Enter this otp to change your password",
+					text: `${otp}`,
 					// You can also use HTML for the email body
 					// html: '<h1>This is the body of the email</h1>'
 				};
@@ -46,7 +49,10 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 					if (error) {
 						return res.json({ error: error.message });
 					} else {
-						return res.json({ message: "Mail sent successfully" });
+						return res.json({
+							message: "Mail sent successfully",
+							forgetPasswordRequest,
+						});
 					}
 				});
 			}
@@ -60,7 +66,8 @@ const sendEmailForResettingPasswordController = async (req, res) => {
 
 // first post request which will be fired when the user will click on the sent link through the email just to check whether the link is still active or not
 const passwordResettingController = async (req, res) => {
-	const { requestId } = req.body;
+	const { requestId } = req.params;
+	console.log(requestId);
 
 	try {
 		const isRequestExists = await ForgotPasswordRequest.findOne({
@@ -78,16 +85,23 @@ const passwordResettingController = async (req, res) => {
 
 // second post request which completely handles the password resetting logic
 const confirmResetPasswordController = async (req, res) => {
-	const { email, requestId, password } = req.body;
+	const { requestId, password } = req.body;
 
 	try {
 		// finding the user whose password is supposed to be reset
-		const user = await User.findOne({ where: { email } });
+		const isRequestExists = await ForgotPasswordRequest.findOne({
+			where: { id: requestId },
+		});
+		const isUserExists = await User.findOne({
+			where: { id: isRequestExists.ExpenseUserId },
+		});
 
-		if (!user) return res.json({ error: "User not found" });
-
+		if (!isUserExists) return res.json({ error: "User not found" });
 		// checking if the user is using the same previous password or not
-		const isPrevious = await bcrypt.compare(password, user.password);
+		const isPrevious = await bcrypt.compare(
+			password,
+			isUserExists.password,
+		);
 		if (isPrevious)
 			return res.json({
 				error: "password can't be same as the previous one",
@@ -95,7 +109,7 @@ const confirmResetPasswordController = async (req, res) => {
 		// if the user exists then need to hash his new password before updating with the old one
 		const hashedPassword = await bcrypt.hash(password, saltRounds);
 		// now updating the new password with the old password
-		await user.update({ password: hashedPassword });
+		await isUserExists.update({ password: hashedPassword });
 		// now after successful updation we need to change the password reset request isActive status from true to false so that when user next time clicks on the same password resetting link it will throw him an error saying that the password reset link is not active/expired
 		// finding that password reset request
 		const passwordResetRequest = await ForgotPasswordRequest.findOne({
@@ -103,7 +117,6 @@ const confirmResetPasswordController = async (req, res) => {
 		});
 		// now updating the status of isActive field of this requst from true to false
 		await passwordResetRequest.update({ isActive: false });
-
 		return res.json({ message: "Password updated successfully" });
 	} catch (error) {
 		return res.json({ error: error.message });

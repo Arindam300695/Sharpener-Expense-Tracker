@@ -10,7 +10,10 @@ const {
 const passWordResetRouter = express.Router();
 
 passWordResetRouter.post("/", sendEmailForResettingPasswordController);
-passWordResetRouter.post("/reset-password", passwordResettingController);
+passWordResetRouter.get(
+	"/reset-password/:requestId",
+	passwordResettingController,
+);
 passWordResetRouter.post(
 	"/confirmResetPassword",
 	confirmResetPasswordController,

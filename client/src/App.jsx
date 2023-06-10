@@ -24,7 +24,7 @@ function App() {
 				<Route path="/paymentFailed" element={<PaymentFailedPage />} />
 				<Route path="/thankyou" element={<ThankYouPage />} />
 				<Route
-					path="/password/resetpassword/:requestId"
+					path="/password/resetpassword"
 					element={<ForgetPasswordReset />}
 				/>
 				<Route
