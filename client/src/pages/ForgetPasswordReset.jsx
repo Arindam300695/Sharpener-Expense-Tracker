@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 
-const baseUrl = "http://localhost:8080";
+const baseUrl = "https://expense-tracker-1o1h.onrender.com";
 
 const ForgetPasswordReset = () => {
 	const navigate = useNavigate();
