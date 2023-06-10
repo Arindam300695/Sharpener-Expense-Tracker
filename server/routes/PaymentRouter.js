@@ -26,7 +26,6 @@ paymentRouter.get("/key", async (req, res) => {
 // route for crating an order
 paymentRouter.post("/order", async (req, res) => {
 	const { userId } = req.body;
-	console.log(userId);
 
 	try {
 		const amount = 2500;
@@ -81,7 +80,6 @@ paymentRouter.post("/verify", async (req, res) => {
 			const order = await Order.findOne({
 				where: { orderId: razorpay_order_id },
 			});
-			console.log(order);
 			// as that order will contain the respective user id so based on that user id finding the user so that we can also update the user's payment status and can save that to localstorage on the front end side in order to show respective changes whenever that user will login
 			const user = await User.findOne({
 				where: { id: order.ExpenseUserId },
